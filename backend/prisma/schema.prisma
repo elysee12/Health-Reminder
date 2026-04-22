@@ -1,0 +1,335 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  admin
+  provider
+  patient
+}
+
+enum UserStatus {
+  pending
+  active
+  inactive
+}
+
+enum Language {
+  en
+  rw
+}
+
+enum CommunicationMethod {
+  web
+  sms
+  ussd
+  both
+}
+
+enum Gender {
+  Male
+  Female
+}
+
+enum RiskLevel {
+  low
+  moderate
+  high
+}
+
+enum PrescriptionStatus {
+  active
+  completed
+  discontinued
+}
+
+enum ReminderType {
+  web
+  sms
+  both
+}
+
+enum ReminderStatus {
+  pending
+  taken
+  missed
+  snoozed
+}
+
+enum AdherenceStatus {
+  taken
+  missed
+  late
+}
+
+enum GoalStatus {
+  in_progress
+  achieved
+  not_achieved
+}
+
+enum Severity {
+  low
+  medium
+  high
+}
+
+enum AppointmentType {
+  regular
+  emergency
+}
+
+enum AppointmentStatus {
+  pending
+  confirmed
+  cancelled
+  completed
+}
+
+enum SystemStatus {
+  connected
+  disconnected
+}
+
+enum ApiKeyStatus {
+  active
+  inactive
+}
+
+enum SmsStatus {
+  delivered
+  failed
+  pending
+}
+
+enum HospitalStatus {
+  active
+  inactive
+}
+
+model User {
+  id             Int            @id @default(autoincrement())
+  name           String
+  email          String         @unique
+  password       String
+  phone          String?
+  role           UserRole
+  status         UserStatus     @default(pending)
+  language       Language       @default(en)
+  hospital       Hospital?      @relation(fields: [hospitalId], references: [id])
+  hospitalId     Int?
+  patientProfile Patient?
+  prescriptions  Prescription[] @relation("ProviderPrescriptions")
+  followUps      FollowUp[]     @relation("ProviderFollowUps")
+  registeredPatients Patient[]  @relation("RegisteredByUser")
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  reason         String? // Reason for access request
+}
+
+model Patient {
+  id                  Int                 @id @default(autoincrement())
+  user                User?               @relation(fields: [userId], references: [id])
+  userId              Int?                @unique
+  name                String
+  phone               String              @unique
+  email               String              @unique
+  age                 Int
+  gender              Gender
+  address             String
+  registeredDate      DateTime
+  adherenceRate       Int                 @default(0)
+  communicationMethod CommunicationMethod
+  bloodPressure       String?
+  riskLevel           RiskLevel?
+  password            String?
+  pin                 String?
+  hospital            Hospital?           @relation(fields: [hospitalId], references: [id])
+  hospitalId          Int?
+  registeredByUser    User?               @relation("RegisteredByUser", fields: [registeredByUserId], references: [id])
+  registeredByUserId  Int?
+  registeredByHospital Hospital?          @relation("RegisteredByHospital", fields: [registeredByHospitalId], references: [id])
+  registeredByHospitalId Int?
+  prescriptions       Prescription[]
+  reminders           Reminder[]
+  adherenceRecords    AdherenceRecord[]
+  healthGoals         HealthGoal[]
+  sideEffects         SideEffect[]
+  appointments        Appointment[]
+  followUps           FollowUp[]
+  smsLogs             SmsLog[]
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+}
+
+model Hospital {
+  id           Int           @id @default(autoincrement())
+  name         String
+  district     String
+  address      String
+  phone        String
+  status       HospitalStatus @default(active)
+  providers    User[]
+  patients     Patient[]
+  registeredPatients Patient[] @relation("RegisteredByHospital")
+  appointments Appointment[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+model Prescription {
+  id               Int                @id @default(autoincrement())
+  patient          Patient            @relation(fields: [patientId], references: [id])
+  patientId        Int
+  provider         User?              @relation("ProviderPrescriptions", fields: [providerId], references: [id])
+  providerId       Int?
+  medication       String
+  dosage           String
+  frequency        String
+  startDate        DateTime
+  endDate          DateTime
+  status           PrescriptionStatus @default(active)
+  reminders        Reminder[]
+  adherenceRecords AdherenceRecord[]
+  sideEffects      SideEffect[]
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+}
+
+model HealthGoal {
+  id           Int        @id @default(autoincrement())
+  patient      Patient    @relation(fields: [patientId], references: [id])
+  patientId    Int
+  type         String // e.g., "Blood Pressure", "Weight", "Steps"
+  targetValue  String
+  currentValue String?
+  startDate    DateTime
+  endDate      DateTime?
+  status       GoalStatus @default(in_progress)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+}
+
+model SideEffect {
+  id             Int           @id @default(autoincrement())
+  patient        Patient       @relation(fields: [patientId], references: [id])
+  patientId      Int
+  prescription   Prescription? @relation(fields: [prescriptionId], references: [id])
+  prescriptionId Int?
+  effect         String
+  severity       Severity
+  startDate      DateTime      @default(now())
+  reportedDate   DateTime      @default(now())
+  notes          String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+}
+
+model Appointment {
+  id         Int               @id @default(autoincrement())
+  patient    Patient           @relation(fields: [patientId], references: [id])
+  patientId  Int
+  hospital   Hospital          @relation(fields: [hospitalId], references: [id])
+  hospitalId Int
+  dateTime   DateTime
+  type       AppointmentType   @default(regular)
+  reason     String
+  status     AppointmentStatus @default(pending)
+  notes      String?
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+}
+
+model FollowUp {
+  id           Int      @id @default(autoincrement())
+  patient      Patient  @relation(fields: [patientId], references: [id])
+  patientId    Int
+  provider     User     @relation("ProviderFollowUps", fields: [providerId], references: [id])
+  providerId   Int
+  followUpDate DateTime
+  notes        String?
+  status       String   @default("scheduled") // e.g., "scheduled", "completed", "missed"
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Reminder {
+  id             Int            @id @default(autoincrement())
+  patient        Patient        @relation(fields: [patientId], references: [id])
+  patientId      Int
+  prescription   Prescription?  @relation(fields: [prescriptionId], references: [id])
+  prescriptionId Int?
+  medication     String
+  dosage         String
+  scheduledTime  DateTime
+  status         ReminderStatus @default(pending)
+  type           ReminderType
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+}
+
+model AdherenceRecord {
+  id             Int             @id @default(autoincrement())
+  patient        Patient         @relation(fields: [patientId], references: [id])
+  patientId      Int
+  prescription   Prescription?   @relation(fields: [prescriptionId], references: [id])
+  prescriptionId Int?
+  medication     String
+  scheduledTime  DateTime
+  confirmedTime  DateTime?
+  status         AdherenceStatus
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+}
+
+model SmsLog {
+  id        Int       @id @default(autoincrement())
+  patient   Patient?  @relation(fields: [patientId], references: [id])
+  patientId Int?
+  phone     String
+  message   String
+  status    SmsStatus @default(pending)
+  sentAt    DateTime  @default(now())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model ExternalSystem {
+  id        Int          @id @default(autoincrement())
+  name      String
+  type      String
+  protocol  String
+  status    SystemStatus @default(disconnected)
+  lastSync  DateTime?
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+}
+
+model ApiKey {
+  id         Int          @id @default(autoincrement())
+  name       String
+  key        String       @unique
+  createdAt  DateTime     @default(now())
+  lastUsedAt DateTime?
+  status     ApiKeyStatus @default(active)
+}
+
+model PasswordReset {
+  id        Int      @id @default(autoincrement())
+  email     String
+  otpHash   String
+  used      Boolean  @default(false)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}

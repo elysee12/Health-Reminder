@@ -1,0 +1,43 @@
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
+import { FollowUpService } from './follow-up.service';
+import { CreateFollowUpDto } from './dto/create-follow-up.dto';
+import { UpdateFollowUpDto } from './dto/update-follow-up.dto';
+
+@Controller('follow-up')
+export class FollowUpController {
+  constructor(private readonly followUpService: FollowUpService) {}
+
+  @Post()
+  create(@Body() createFollowUpDto: CreateFollowUpDto) {
+    return this.followUpService.create(createFollowUpDto);
+  }
+
+  @Get()
+  findAll(
+    @Query('patientId') patientId?: string,
+    @Query('providerId') providerId?: string,
+  ) {
+    if (patientId) {
+      return this.followUpService.findByPatient(+patientId);
+    }
+    if (providerId) {
+      return this.followUpService.findByProvider(+providerId);
+    }
+    return this.followUpService.findAll();
+  }
+
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.followUpService.findOne(+id);
+  }
+
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() updateFollowUpDto: UpdateFollowUpDto) {
+    return this.followUpService.update(+id, updateFollowUpDto);
+  }
+
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    return this.followUpService.remove(+id);
+  }
+}
