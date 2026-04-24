@@ -20,6 +20,7 @@ export class ReminderService {
   }
 
   async findAll(providerId?: number) {
+    await this.autoMarkMissedReminders();
     return this.prisma.reminder.findMany({
       where: providerId ? { patient: { registeredByUserId: providerId } } : undefined,
       include: {
@@ -27,6 +28,43 @@ export class ReminderService {
         prescription: true,
       },
     });
+  }
+
+  private async autoMarkMissedReminders() {
+    const now = new Date();
+    
+    // Find all pending reminders that are in the past
+    const pastPendingReminders = await this.prisma.reminder.findMany({
+      where: {
+        status: 'pending',
+        scheduledTime: { lt: now },
+      },
+      orderBy: { scheduledTime: 'asc' },
+    });
+
+    if (pastPendingReminders.length === 0) return;
+
+    // For each past pending reminder, check if there's a next reminder that has already reached its scheduled time
+    for (const reminder of pastPendingReminders) {
+      if (!reminder.prescriptionId) continue;
+
+      const nextReminder = await this.prisma.reminder.findFirst({
+        where: {
+          prescriptionId: reminder.prescriptionId,
+          scheduledTime: {
+            gt: reminder.scheduledTime,
+            lte: now,
+          },
+        },
+      });
+
+      if (nextReminder) {
+        await this.prisma.reminder.update({
+          where: { id: reminder.id },
+          data: { status: 'missed' },
+        });
+      }
+    }
   }
 
   async findOne(id: number) {

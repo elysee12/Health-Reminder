@@ -135,23 +135,17 @@ export default function ProviderReminders() {
                               </div>
 
                               <div className="flex items-center gap-2">
-                                {rem.status === 'pending' && (
-                                  <>
-                                    <Button size="sm" variant="ghost" className="h-8 text-success hover:text-success hover:bg-success/10 border border-success/20" onClick={() => updateReminderStatus(rem.id, 'taken')}>
-                                      {language === 'en' ? 'Taken' : 'Yafashwe'}
-                                    </Button>
-                                    <Button size="sm" variant="ghost" className="h-8 text-destructive hover:text-destructive hover:bg-destructive/10 border border-destructive/20" onClick={() => updateReminderStatus(rem.id, 'missed')}>
-                                      {language === 'en' ? 'Missed' : 'Yaburiwe'}
-                                    </Button>
-                                  </>
-                                )}
-                                {rem.status !== 'pending' && (
+                                {rem.status !== 'pending' ? (
                                   <Badge className={
                                     rem.status === 'taken' ? 'bg-success/10 text-success border-success/20 hover:bg-success/10' :
                                     rem.status === 'missed' ? 'bg-destructive/10 text-destructive border-destructive/20 hover:bg-destructive/10' :
                                     'bg-warning/10 text-warning border-warning/20 hover:bg-warning/10'
                                   } variant="outline">
                                     {rem.status}
+                                  </Badge>
+                                ) : (
+                                  <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20">
+                                    {language === 'en' ? 'Pending' : 'Iritegereje'}
                                   </Badge>
                                 )}
                               </div>

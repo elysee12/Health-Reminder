@@ -1,7 +1,7 @@
 import { useAuth } from '@/lib/auth-context';
 import DashboardLayout from '@/components/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { LayoutDashboard, Users, Pill, Bell, BarChart3, MessageSquare, CheckCircle, XCircle, AlertTriangle, Activity, Target, Calendar, UserCheck, User } from 'lucide-react';
+import { LayoutDashboard, Users, Pill, Bell, BarChart3, MessageSquare, CheckCircle, XCircle, AlertTriangle, Activity, Target, Calendar, UserCheck, User, Clock } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { usePatients, usePrescriptions, useReminders, useAdherenceRecords } from '@/hooks/use-api';
 import { useMemo } from 'react';
@@ -29,6 +29,7 @@ export default function ProviderDashboard() {
 
   const activeRx = prescriptions.filter((p: any) => p.status === 'active');
   const missedReminders = reminders.filter((r: any) => r.status === 'missed');
+  const pendingReminders = reminders.filter((r: any) => r.status === 'pending');
   const highRiskPatients = patients.filter((p: any) => p.adherenceRate < 70);
 
   const weeklyAdherenceData = useMemo(() => {
@@ -50,7 +51,7 @@ export default function ProviderDashboard() {
 
   const stats = [
     { label: t('patients'), value: patients.length, icon: Users, color: 'text-primary' },
-    { label: t('active_prescriptions'), value: activeRx.length, icon: Pill, color: 'text-info' },
+    { label: 'Pending Today', value: pendingReminders.length, icon: Clock, color: 'text-warning' },
     { label: 'Missed Today', value: missedReminders.length, icon: XCircle, color: 'text-destructive' },
     { label: 'High Risk', value: highRiskPatients.length, icon: AlertTriangle, color: 'text-warning' },
   ];

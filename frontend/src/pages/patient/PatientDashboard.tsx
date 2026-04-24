@@ -71,7 +71,7 @@ export default function PatientDashboard() {
   const stats = [
     { label: t('adherence_rate'), value: '87%', icon: CheckCircle, color: 'text-success' },
     { label: t('active_prescriptions'), value: activeRx.length, icon: Pill, color: 'text-primary' },
-    { label: t('taken'), value: takenCount, icon: CheckCircle, color: 'text-success' },
+    { label: t('pending'), value: pendingCount, icon: Clock, color: 'text-warning' },
     { label: t('missed'), value: missedCount, icon: XCircle, color: 'text-destructive' },
   ];
 

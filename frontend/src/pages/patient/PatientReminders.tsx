@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { LayoutDashboard, Pill, Bell, Clock, History, Target, MessageSquare, Calendar, CheckCircle, XCircle, ChevronDown, ChevronRight } from 'lucide-react';
 import { api } from '@/lib/api';
 import { toast } from 'sonner';
+import { useQueryClient } from '@tanstack/react-query';
 
 const sidebarItems = [
   { label: 'Dashboard', icon: <LayoutDashboard className="h-4 w-4" />, path: '/patient' },
@@ -20,6 +21,7 @@ const sidebarItems = [
 
 export default function PatientReminders() {
   const { user, t, language } = useAuth();
+  const queryClient = useQueryClient();
   const { data: reminders = [] } = useReminders();
   const { data: prescriptions = [] } = usePrescriptions();
   const [expandedRx, setExpandedRx] = useState<Record<number, boolean>>({});
@@ -49,6 +51,7 @@ export default function PatientReminders() {
     try {
       await api.reminders.update(id, { status: 'taken' });
       toast.success(language === 'en' ? 'Medication marked as taken' : 'Umuti wemejwe ko wafashwe');
+      queryClient.invalidateQueries(['reminders']);
     } catch (error) {
       toast.error('Failed to update reminder');
     }
