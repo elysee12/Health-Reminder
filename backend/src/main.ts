@@ -14,8 +14,21 @@ async function bootstrap() {
       transform: true,
     }));
 
+    const allowedOrigins = [
+      process.env.FRONTEND_URL,
+      'https://health-reminder-td0u.onrender.com',
+      'http://localhost:8080',
+    ].filter(Boolean);
+
     app.enableCors({
-      origin: process.env.FRONTEND_URL ?? 'http://localhost:8080',
+      origin: (origin, callback) => {
+        if (!origin || allowedOrigins.includes(origin)) {
+          callback(null, true);
+        } else {
+          console.warn(`CORS blocked for origin: ${origin}`);
+          callback(new Error('Not allowed by CORS'));
+        }
+      },
       methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
       credentials: true,
     });
