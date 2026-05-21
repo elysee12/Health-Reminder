@@ -12,9 +12,10 @@ interface NavItem {
 
 interface AppSidebarProps {
   items: NavItem[];
+  onNavItemClick?: () => void;
 }
 
-export default function AppSidebar({ items }: AppSidebarProps) {
+export default function AppSidebar({ items, onNavItemClick }: AppSidebarProps) {
   const { user, logout, toggleLanguage, language } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -22,6 +23,12 @@ export default function AppSidebar({ items }: AppSidebarProps) {
   const handleLogout = () => {
     logout();
     navigate('/');
+    if (onNavItemClick) onNavItemClick();
+  };
+
+  const handleNavItemClick = (path: string) => {
+    navigate(path);
+    if (onNavItemClick) onNavItemClick();
   };
 
   const handleEditProfile = () => {
@@ -31,10 +38,11 @@ export default function AppSidebar({ items }: AppSidebarProps) {
       patient: '/patient/profile',
     };
     navigate(rolePathMap[user?.role || 'patient']);
+    if (onNavItemClick) onNavItemClick();
   };
 
   return (
-    <aside className="w-64 min-h-screen bg-sidebar text-sidebar-foreground flex flex-col">
+    <aside className="w-full lg:w-64 h-full bg-sidebar text-sidebar-foreground flex flex-col">
       <div className="p-5 flex items-center gap-3 border-b border-sidebar-border">
         <div className="w-9 h-9 rounded-xl bg-sidebar-primary/20 flex items-center justify-center">
           <Heart className="h-5 w-5 text-sidebar-primary" />
@@ -49,7 +57,7 @@ export default function AppSidebar({ items }: AppSidebarProps) {
         {items.map((item) => (
           <button
             key={item.path}
-            onClick={() => navigate(item.path)}
+            onClick={() => handleNavItemClick(item.path)}
             className={`sidebar-nav-item w-full text-left ${
               location.pathname === item.path ? 'sidebar-nav-item-active' : 'hover:bg-sidebar-accent/50'
             }`}
@@ -60,7 +68,7 @@ export default function AppSidebar({ items }: AppSidebarProps) {
         ))}
       </nav>
 
-      <div className="p-3 border-t border-sidebar-border space-y-2">
+      <div className="p-3 border-t border-sidebar-border space-y-2 pb-6 lg:pb-3">
         <Button variant="ghost" size="sm" className="w-full justify-start gap-2 text-sidebar-foreground hover:bg-sidebar-accent" onClick={toggleLanguage}>
           <Globe className="h-4 w-4" />
           {language === 'en' ? 'Kinyarwanda' : 'English'}
