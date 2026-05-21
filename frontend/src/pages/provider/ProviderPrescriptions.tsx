@@ -29,6 +29,20 @@ const sidebarItems = [
 export default function ProviderPrescriptions() {
   const queryClient = useQueryClient();
   const { t, language, user } = useAuth();
+
+  const formatDate = (dateStr: string) => {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    return date.toLocaleString(language === 'en' ? 'en-US' : 'fr-FR', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true,
+    });
+  };
+
   const { data: rxList = [], isLoading } = usePrescriptions(user?.id);
   const { data: patients = [] } = usePatients(user?.id);
   const [addOpen, setAddOpen] = useState(false);
@@ -43,6 +57,7 @@ export default function ProviderPrescriptions() {
   const [formStartDate, setFormStartDate] = useState('');
   const [formEndDate, setFormEndDate] = useState('');
   const [formStatus, setFormStatus] = useState<'active' | 'completed' | 'discontinued'>('active');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formReminderType, setFormReminderType] = useState('web');
   const [formReminderTimes, setFormReminderTimes] = useState<string[]>(['08:00']);
 
@@ -64,7 +79,7 @@ export default function ProviderPrescriptions() {
         startDate: formStartDate,
         endDate: formEndDate,
         status: formStatus,
-        providerId: user?.id,
+        providerId: user?.id ? Number(user.id) : undefined,
         reminderType: formReminderType,
         reminderTimes: filteredTimes,
       });
@@ -82,15 +97,31 @@ export default function ProviderPrescriptions() {
     setFormMedication(rx.medication);
     setFormDosage(rx.dosage);
     setFormFrequency(rx.frequency);
-    setFormStartDate(rx.startDate?.split('T')[0] ?? rx.startDate);
-    setFormEndDate(rx.endDate?.split('T')[0] ?? rx.endDate);
+    
+    // Format for datetime-local: YYYY-MM-DDTHH:mm
+    const formatForInput = (dateStr: string) => {
+      if (!dateStr) return '';
+      const d = new Date(dateStr);
+      const pad = (n: number) => n.toString().padStart(2, '0');
+      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    };
+
+    setFormStartDate(formatForInput(rx.startDate));
+    setFormEndDate(formatForInput(rx.endDate));
     setFormStatus(rx.status);
-    // For editing, we don't pre-fill reminderType and reminderTimes as they are generated on creation
+    setFormReminderType(rx.reminderType || 'web');
+    setFormReminderTimes(rx.reminderTimes || ['08:00']);
     setEditOpen(true);
   };
 
   const handleEdit = async () => {
     if (!selected) return;
+    const filteredTimes = formReminderTimes.filter(t => t.trim() !== '');
+    if (!formPatient || !formMedication || !formDosage || !formFrequency || !formStartDate || !formEndDate || filteredTimes.length === 0) {
+      toast.error(language === 'en' ? 'Please fill all fields, including at least one reminder time.' : 'Uzuza imyanya yose, harimo nibura igihe kimwe cyo kwibutsa.');
+      return;
+    }
+
     try {
       await api.prescriptions.update(selected.id, {
         patientId: Number(formPatient),
@@ -100,10 +131,13 @@ export default function ProviderPrescriptions() {
         startDate: formStartDate,
         endDate: formEndDate,
         status: formStatus,
+        providerId: user?.id ? Number(user.id) : undefined,
+        reminderType: formReminderType,
+        reminderTimes: filteredTimes,
       });
       await queryClient.invalidateQueries(['prescriptions']);
       resetForm(); setEditOpen(false); setSelected(null);
-      toast.success(language === 'en' ? 'Prescription updated' : 'Imiti yahinduwe');
+      toast.success(language === 'en' ? 'Prescription updated' : 'Imiti yahinduwe neza');
     } catch (error: any) {
       toast.error(error.message || (language === 'en' ? 'Unable to update prescription' : 'Ntabashije guhindura imiti'));
     }
@@ -153,9 +187,15 @@ export default function ProviderPrescriptions() {
                   <Select value={formPatient} onValueChange={setFormPatient}>
                     <SelectTrigger className="mt-1.5"><SelectValue placeholder={language === 'en' ? 'Select patient' : 'Hitamo umurwayi'} /></SelectTrigger>
                     <SelectContent>
-                      {patients.map((p) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
+                      {patients.map((p) => <SelectItem key={p.id} value={`${p.id}`}>{p.name}</SelectItem>)}
                     </SelectContent>
                   </Select>
+                  {formPatient && (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {language === 'en' ? 'Reminders will be sent to: ' : 'Ibikubutsa bizoherezwa kuri: '}
+                      <span className="font-medium">{patients.find(p => `${p.id}` === formPatient)?.phone}</span>
+                    </p>
+                  )}
                 </div>
                 <div><Label>{language === 'en' ? 'Medication' : 'Umuti'}</Label><Input value={formMedication} onChange={(e) => setFormMedication(e.target.value)} placeholder="e.g. Amlodipine, Lisinopril, Losartan" className="mt-1.5" /></div>
                 <div className="grid grid-cols-2 gap-3">
@@ -163,8 +203,8 @@ export default function ProviderPrescriptions() {
                   <div><Label>{language === 'en' ? 'Frequency' : 'Inshuro'}</Label><Input value={formFrequency} onChange={(e) => setFormFrequency(e.target.value)} placeholder="e.g. Twice daily" className="mt-1.5" /></div>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
-                  <div><Label>{language === 'en' ? 'Start Date' : 'Itariki yo Gutangira'}</Label><Input type="date" value={formStartDate} onChange={(e) => setFormStartDate(e.target.value)} className="mt-1.5" /></div>
-                  <div><Label>{language === 'en' ? 'End Date' : 'Itariki yo Kurangira'}</Label><Input type="date" value={formEndDate} onChange={(e) => setFormEndDate(e.target.value)} className="mt-1.5" /></div>
+                  <div><Label>{language === 'en' ? 'Start Date' : 'Itariki yo Gutangira'}</Label><Input type="datetime-local" value={formStartDate} onChange={(e) => setFormStartDate(e.target.value)} className="mt-1.5" /></div>
+                  <div><Label>{language === 'en' ? 'End Date' : 'Itariki yo Kurangira'}</Label><Input type="datetime-local" value={formEndDate} onChange={(e) => setFormEndDate(e.target.value)} className="mt-1.5" /></div>
                 </div>
                 <div>
                   <Label>{language === 'en' ? 'Status' : 'Imimerere'}</Label>
@@ -255,7 +295,20 @@ export default function ProviderPrescriptions() {
                       <td className="py-3 px-4 text-card-foreground">{rx.medication}</td>
                       <td className="py-3 px-4 text-muted-foreground">{rx.dosage}</td>
                       <td className="py-3 px-4 text-muted-foreground">{rx.frequency}</td>
-                      <td className="py-3 px-4 text-muted-foreground">{rx.startDate} → {rx.endDate}</td>
+                      <td className="py-3 px-4 text-muted-foreground font-medium min-w-[200px]">
+                        <div className="flex flex-col gap-0.5">
+                          <div className="flex items-center gap-2">
+                            <Calendar className="h-3 w-3 text-primary/60" />
+                            <span>{formatDate(rx.startDate)}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <div className="w-3 flex justify-center">
+                              <span className="text-[10px] text-muted-foreground/40">to</span>
+                            </div>
+                            <span>{formatDate(rx.endDate)}</span>
+                          </div>
+                        </div>
+                      </td>
                       <td className="py-3 px-4">
                         <span className={rx.status === 'active' ? 'badge-success' : rx.status === 'completed' ? 'badge-warning' : 'badge-destructive'}>{rx.status}</span>
                       </td>
@@ -292,8 +345,8 @@ export default function ProviderPrescriptions() {
                 <div><Label>{language === 'en' ? 'Frequency' : 'Inshuro'}</Label><Input value={formFrequency} onChange={(e) => setFormFrequency(e.target.value)} placeholder="e.g. Twice daily" className="mt-1.5" /></div>
               </div>
               <div className="grid grid-cols-2 gap-3">
-                <div><Label>{language === 'en' ? 'Start Date' : 'Itariki yo Gutangira'}</Label><Input type="date" value={formStartDate} onChange={(e) => setFormStartDate(e.target.value)} className="mt-1.5" /></div>
-                <div><Label>{language === 'en' ? 'End Date' : 'Itariki yo Kurangira'}</Label><Input type="date" value={formEndDate} onChange={(e) => setFormEndDate(e.target.value)} className="mt-1.5" /></div>
+                <div><Label>{language === 'en' ? 'Start Date' : 'Itariki yo Gutangira'}</Label><Input type="datetime-local" value={formStartDate} onChange={(e) => setFormStartDate(e.target.value)} className="mt-1.5" /></div>
+                <div><Label>{language === 'en' ? 'End Date' : 'Itariki yo Kurangira'}</Label><Input type="datetime-local" value={formEndDate} onChange={(e) => setFormEndDate(e.target.value)} className="mt-1.5" /></div>
               </div>
               <div>
                 <Label>{language === 'en' ? 'Status' : 'Imimerere'}</Label>
@@ -305,6 +358,31 @@ export default function ProviderPrescriptions() {
                     <SelectItem value="discontinued">{language === 'en' ? 'Discontinued' : 'Yahagaritswe'}</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label>{language === 'en' ? 'Reminder Type' : 'Ubwoko bw\'Ikibutsa'}</Label>
+                  <Select value={formReminderType} onValueChange={setFormReminderType}>
+                    <SelectTrigger className="mt-1.5"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="web">Web/App Notification</SelectItem>
+                      <SelectItem value="sms">SMS</SelectItem>
+                      <SelectItem value="both">Both (Web + SMS)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>{language === 'en' ? 'Reminder Times' : 'Ibihe byo Kwibutsa'}</Label>
+                  {formReminderTimes.map((time, index) => (
+                    <div key={index} className="flex gap-2 mt-1.5">
+                      <Input type="time" value={time} onChange={(e) => handleTimeChange(index, e.target.value)} />
+                      {formReminderTimes.length > 1 && (
+                        <Button variant="outline" size="icon" onClick={() => removeTimeField(index)}><Trash2 className="h-4 w-4" /></Button>
+                      )}
+                    </div>
+                  ))}
+                  <Button variant="outline" size="sm" className="mt-2 w-full" onClick={addTimeField}><Plus className="h-4 w-4 mr-2" />Add Time</Button>
+                </div>
               </div>
             </div>
             <DialogFooter className="mt-4">

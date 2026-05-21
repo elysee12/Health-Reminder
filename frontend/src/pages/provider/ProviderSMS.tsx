@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/lib/auth-context';
 import { api } from '@/lib/api';
@@ -12,6 +12,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { LayoutDashboard, Users, Pill, Bell, BarChart3, MessageSquare, Send, CheckCircle, Clock, XCircle, Info, Target, Calendar, UserCheck, AlertTriangle } from 'lucide-react';
+import { toast } from 'sonner';
 
 const sidebarItems = [
   { label: 'Dashboard', icon: <LayoutDashboard className="h-4 w-4" />, path: '/provider' },
@@ -47,9 +48,26 @@ export default function ProviderSMS() {
   const [sendType, setSendType] = useState<'patient' | 'custom' | 'all'>('patient');
   const [template, setTemplate] = useState<string>('custom');
 
-  const createLogMutation = useMutation({
-    mutationFn: api.smsLogs.create,
-    onSuccess: () => queryClient.invalidateQueries(['sms-logs']),
+  // Auto-refresh logs if there are pending messages
+  useEffect(() => {
+    const hasPending = (logs ?? []).some((s: any) => s.status === 'pending');
+    if (hasPending) {
+      const interval = setInterval(() => {
+        queryClient.invalidateQueries(['sms-logs']);
+      }, 2000);
+      return () => clearInterval(interval);
+    }
+  }, [logs, queryClient]);
+
+  const broadcastMutation = useMutation({
+    mutationFn: api.smsLogs.broadcast,
+    onSuccess: () => {
+      queryClient.invalidateQueries(['sms-logs']);
+      toast.success(language === 'en' ? 'SMS sent successfully' : 'SMS yoherejwe neza');
+    },
+    onError: (error: any) => {
+      toast.error(error?.message || (language === 'en' ? 'Failed to send SMS' : 'Ntiyohereje SMS'));
+    }
   });
 
   const sendablePatients = patients.filter(
@@ -83,14 +101,9 @@ export default function ProviderSMS() {
           return;
         }
 
-        await Promise.all(sendablePatients.map((p: any) => createLogMutation.mutateAsync({
-          patientId: p.id,
-          phone: p.phone,
+        await broadcastMutation.mutateAsync({
           message: msgWithFooter,
-          status: 'pending',
-        })));
-
-        toast.success(language === 'en' ? `SMS sent to ${sendablePatients.length} patients` : `SMS yoherejwe ku barwayi ${sendablePatients.length}`);
+        });
       } else if (sendType === 'patient' && recipient) {
         const pat = patients.find((p: any) => `${p.id}` === recipient);
         if (!pat) {
@@ -98,28 +111,21 @@ export default function ProviderSMS() {
           return;
         }
 
-        await createLogMutation.mutateAsync({
+        await broadcastMutation.mutateAsync({
           patientId: pat.id,
-          phone: pat.phone,
           message: msgWithFooter,
-          status: 'pending',
         });
-
-        toast.success(language === 'en' ? `SMS sent to ${pat.name}` : `SMS yoherejwe kuri ${pat.name}`);
       } else if (sendType === 'custom' && customPhone) {
-        await createLogMutation.mutateAsync({
+        await broadcastMutation.mutateAsync({
           phone: customPhone,
           message: msgWithFooter,
-          status: 'pending',
         });
-
-        toast.success(language === 'en' ? `SMS sent to ${customPhone}` : `SMS yoherejwe kuri ${customPhone}`);
       } else {
         toast.error(language === 'en' ? 'Please select a recipient' : 'Hitamo uwo wohereza');
         return;
       }
     } catch (error: any) {
-      toast.error(error?.message || (language === 'en' ? 'Failed to send SMS' : 'Ntiyohereje SMS')); 
+      // Error is handled by mutation
     } finally {
       setMessage('');
       setRecipient('');
@@ -143,7 +149,10 @@ export default function ProviderSMS() {
               <div className="space-y-4 pt-2">
                 <div>
                   <Label>{language === 'en' ? 'Send To' : 'Ohereza Kuri'}</Label>
-                  <Select value={sendType} onValueChange={(v) => setSendType(v as any)}>
+                  <Select value={sendType} onValueChange={(v) => {
+                    setSendType(v as any);
+                    if (v === 'all') applyTemplate('custom');
+                  }}>
                     <SelectTrigger className="mt-1.5"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="patient">{language === 'en' ? 'Select Patient' : 'Hitamo Umurwayi'}</SelectItem>
@@ -184,10 +193,14 @@ export default function ProviderSMS() {
                     <SelectTrigger className="mt-1.5"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="custom">{language === 'en' ? 'Custom Message' : 'Ubutumwa Bwihariye'}</SelectItem>
-                      <SelectItem value="reminder">{language === 'en' ? 'Medication Reminder' : 'Ikibutsa cy\'Imiti'}</SelectItem>
-                      <SelectItem value="missed">{language === 'en' ? 'Missed Dose Alert' : 'Imiti Yaburiwe'}</SelectItem>
-                      <SelectItem value="bp_check">{language === 'en' ? 'BP Check Reminder' : "Ikibutsa cyo Gupima Umuvuduko"}</SelectItem>
-                      <SelectItem value="appointment">{language === 'en' ? 'Appointment Reminder' : 'Ikibutsa cy\'Ikiruhuko'}</SelectItem>
+                      {sendType !== 'all' && (
+                        <>
+                          <SelectItem value="reminder">{language === 'en' ? 'Medication Reminder' : 'Ikibutsa cy\'Imiti'}</SelectItem>
+                          <SelectItem value="missed">{language === 'en' ? 'Missed Dose Alert' : 'Imiti Yaburiwe'}</SelectItem>
+                          <SelectItem value="bp_check">{language === 'en' ? 'BP Check Reminder' : "Ikibutsa cyo Gupima Umuvuduko"}</SelectItem>
+                          <SelectItem value="appointment">{language === 'en' ? 'Appointment Reminder' : 'Ikibutsa cy\'Ikiruhuko'}</SelectItem>
+                        </>
+                      )}
                     </SelectContent>
                   </Select>
                 </div>
@@ -236,7 +249,7 @@ export default function ProviderSMS() {
                        <Clock className="h-4 w-4" />}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <div className="font-medium text-card-foreground">{sms.patient ?? sms.phone}</div>
+                      <div className="font-medium text-card-foreground">{sms.patient?.name ?? sms.phone}</div>
                       <div className="text-sm text-muted-foreground truncate max-w-md">{(sms.message ?? '').split('\n')[0]}</div>
                       <div className="text-xs text-muted-foreground mt-1">{sms.phone} · {sms.time || (sms.createdAt ? new Date(sms.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }) : '')}</div>
                     </div>

@@ -1,11 +1,65 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateReminderDto } from './dto/create-reminder.dto';
 import { UpdateReminderDto } from './dto/update-reminder.dto';
+import { Cron, CronExpression } from '@nestjs/schedule';
+import { SmsLogService } from '../sms-log/sms-log.service';
 
 @Injectable()
 export class ReminderService {
-  constructor(private prisma: PrismaService) {}
+  private readonly logger = new Logger(ReminderService.name);
+
+  constructor(
+    private prisma: PrismaService,
+    private smsLogService: SmsLogService,
+  ) {}
+
+  @Cron(CronExpression.EVERY_MINUTE)
+  async handleCron() {
+    this.logger.debug('Running medication reminder cron job');
+    const now = new Date();
+    const oneMinuteAgo = new Date(now.getTime() - 60 * 1000);
+
+    // Find pending reminders that are due now
+    const dueReminders = await this.prisma.reminder.findMany({
+      where: {
+        status: 'pending',
+        type: { in: ['sms', 'both'] },
+        scheduledTime: {
+          gte: oneMinuteAgo,
+          lte: now,
+        },
+      },
+      include: {
+        patient: {
+          include: {
+            user: true,
+          },
+        },
+      },
+    });
+
+    for (const reminder of dueReminders) {
+      const { patient, medication, dosage } = reminder;
+      if (patient && patient.phone) {
+        const language = patient.user?.language || 'en';
+        let message = '';
+
+        if (language === 'rw') {
+          message = `Mwibuke kunywa umuti wa ${medication} (${dosage}) ubu. Gira ubuzima bwiza!`;
+        } else {
+          message = `Reminder: It is time to take your medication: ${medication} (${dosage}). Stay healthy!`;
+        }
+
+        await this.smsLogService.sendSms(patient.phone, message, patient.id);
+        
+        // We don't mark as 'taken' automatically, it stays 'pending' until the patient confirms in the app
+        // or it is marked 'missed' by the autoMarkMissedReminders job.
+        // However, we should probably mark that the SMS was sent. 
+        // For now, let's just log it.
+      }
+    }
+  }
 
   async create(createReminderDto: CreateReminderDto) {
     const { scheduledTime, patientId, prescriptionId, ...rest } = createReminderDto;

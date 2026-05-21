@@ -65,6 +65,7 @@ export const api = {
     findAll: (providerId?: number) => fetchFromApi(`/sms-log${providerId ? `?providerId=${providerId}` : ''}`),
     findOne: (id: number) => fetchFromApi(`/sms-log/${id}`),
     create: (data: any) => fetchFromApi('/sms-log', { method: 'POST', body: JSON.stringify(data) }),
+    broadcast: (data: { message: string; patientId?: number; phone?: string }) => fetchFromApi('/sms-log/broadcast', { method: 'POST', body: JSON.stringify(data) }),
     update: (id: number, data: any) => fetchFromApi(`/sms-log/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
     remove: (id: number) => fetchFromApi(`/sms-log/${id}`, { method: 'DELETE' }),
   },

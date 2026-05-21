@@ -60,18 +60,31 @@ type FormFieldsProps = {
 const FormFields = ({ language, t, formName, setFormName, formPhone, setFormPhone, formEmail, setFormEmail, formAge, setFormAge, formGender, setFormGender, formAddress, setFormAddress, formCommMethod, setFormCommMethod, formPassword, setFormPassword, formConfirmPassword, setFormConfirmPassword, formPin, setFormPin, formConfirmPin, setFormConfirmPin, showPassword, setShowPassword, showPin, setShowPin }: FormFieldsProps) => (
   <div className="grid grid-cols-2 gap-4">
     <div className="col-span-2">
+      <Label>{language === 'en' ? 'Communication Method' : 'Uburyo bwo Gutumanaho'}</Label>
+      <Select value={formCommMethod} onValueChange={(v) => setFormCommMethod(v as any)}>
+        <SelectTrigger className="mt-1.5"><SelectValue /></SelectTrigger>
+        <SelectContent>
+          <SelectItem value="web">{language === 'en' ? 'Web/App' : 'Web/App'}</SelectItem>
+          <SelectItem value="ussd">USSD</SelectItem>
+          <SelectItem value="both">{language === 'en' ? 'Both (Web + USSD)' : 'Byombi (Web + USSD)'}</SelectItem>
+        </SelectContent>
+      </Select>
+    </div>
+    <div className="col-span-2">
       <Label>{language === 'en' ? 'Full Name' : 'Amazina Yose'}</Label>
-      <Input autoFocus value={formName} onChange={(e) => setFormName(e.target.value)} placeholder="Patient name" className="mt-1.5" />
+      <Input value={formName} onChange={(e) => setFormName(e.target.value)} placeholder="Patient name" className="mt-1.5" />
     </div>
     <div>
       <Label>{language === 'en' ? 'Phone' : 'Telefoni'}</Label>
       <Input value={formPhone} onChange={(e) => setFormPhone(e.target.value)} placeholder="+250..." className="mt-1.5" />
     </div>
-    <div>
-      <Label>{t('email')}</Label>
-      <Input value={formEmail} onChange={(e) => setFormEmail(e.target.value)} placeholder="email@example.com" className="mt-1.5" />
-    </div>
-    <div>
+    {formCommMethod !== 'ussd' && (
+      <div>
+        <Label>{t('email')}</Label>
+        <Input value={formEmail} onChange={(e) => setFormEmail(e.target.value)} placeholder="email@example.com" className="mt-1.5" />
+      </div>
+    )}
+    <div className={formCommMethod === 'ussd' ? 'col-span-1' : ''}>
       <Label>{language === 'en' ? 'Age' : 'Imyaka'}</Label>
       <Input type="number" value={formAge} onChange={(e) => setFormAge(e.target.value)} placeholder="25" className="mt-1.5" />
     </div>
@@ -88,17 +101,6 @@ const FormFields = ({ language, t, formName, setFormName, formPhone, setFormPhon
     <div className="col-span-2">
       <Label>{language === 'en' ? 'Address' : 'Aderesi'}</Label>
       <Input value={formAddress} onChange={(e) => setFormAddress(e.target.value)} placeholder="District, Sector" className="mt-1.5" />
-    </div>
-    <div className="col-span-2">
-      <Label>{language === 'en' ? 'Communication Method' : 'Uburyo bwo Gutumanaho'}</Label>
-      <Select value={formCommMethod} onValueChange={(v) => setFormCommMethod(v as any)}>
-        <SelectTrigger className="mt-1.5"><SelectValue /></SelectTrigger>
-        <SelectContent>
-          <SelectItem value="web">{language === 'en' ? 'Web/App' : 'Web/App'}</SelectItem>
-          <SelectItem value="ussd">USSD</SelectItem>
-          <SelectItem value="both">{language === 'en' ? 'Both (Web + USSD)' : 'Byombi (Web + USSD)'}</SelectItem>
-        </SelectContent>
-      </Select>
     </div>
     {formCommMethod === 'ussd' ? (
       <>
@@ -185,7 +187,7 @@ export default function ProviderPatients() {
       await api.patients.create({
         name: formName,
         phone: formPhone,
-        email: formEmail,
+        email: formEmail || undefined,
         age: Number(formAge) || 0,
         gender: formGender,
         address: formAddress,
@@ -217,7 +219,7 @@ export default function ProviderPatients() {
       await api.patients.update(selected.id, {
         name: formName,
         phone: formPhone,
-        email: formEmail,
+        email: formEmail || undefined,
         age: Number(formAge) || 0,
         gender: formGender,
         address: formAddress,
@@ -255,92 +257,23 @@ export default function ProviderPatients() {
             <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto p-6"> 
               <DialogHeader><DialogTitle className="font-heading">{language === 'en' ? 'Register New Patient' : 'Andikisha Umurwayi Mushya'}</DialogTitle></DialogHeader>
               <form onSubmit={(e) => { e.preventDefault(); handleAdd(); }} className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="col-span-2">
-                    <Label>{language === 'en' ? 'Full Name' : 'Amazina Yose'}</Label>
-                    <Input autoFocus value={formName} onChange={(e) => setFormName(e.target.value)} placeholder="Patient name" className="mt-1.5" />
-                  </div>
-                  <div>
-                    <Label>{language === 'en' ? 'Phone' : 'Telefoni'}</Label>
-                    <Input value={formPhone} onChange={(e) => setFormPhone(e.target.value)} placeholder="+250..." className="mt-1.5" />
-                  </div>
-                  <div>
-                    <Label>{t('email')}</Label>
-                    <Input value={formEmail} onChange={(e) => setFormEmail(e.target.value)} placeholder="email@example.com" className="mt-1.5" />
-                  </div>
-                  <div>
-                    <Label>{language === 'en' ? 'Age' : 'Imyaka'}</Label>
-                    <Input type="number" value={formAge} onChange={(e) => setFormAge(e.target.value)} placeholder="25" className="mt-1.5" />
-                  </div>
-                  <div>
-                    <Label>{language === 'en' ? 'Gender' : 'Igitsina'}</Label>
-                    <Select value={formGender} onValueChange={(v) => setFormGender(v as any)}>
-                      <SelectTrigger className="mt-1.5"><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Male">{language === 'en' ? 'Male' : 'Gabo'}</SelectItem>
-                        <SelectItem value="Female">{language === 'en' ? 'Female' : 'Gore'}</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="col-span-2">
-                    <Label>{language === 'en' ? 'Address' : 'Aderesi'}</Label>
-                    <Input value={formAddress} onChange={(e) => setFormAddress(e.target.value)} placeholder="District, Sector" className="mt-1.5" />
-                  </div>
-                  <div className="col-span-2">
-                    <Label>{language === 'en' ? 'Communication Method' : 'Uburyo bwo Gutumanaho'}</Label>
-                    <Select value={formCommMethod} onValueChange={(v) => setFormCommMethod(v as any)}>
-                      <SelectTrigger className="mt-1.5"><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="web">{language === 'en' ? 'Web/App' : 'Web/App'}</SelectItem>
-                        <SelectItem value="ussd">USSD</SelectItem>
-                        <SelectItem value="both">{language === 'en' ? 'Both (Web + USSD)' : 'Byombi (Web + USSD)'}</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  {formCommMethod === 'ussd' ? (
-                    <>
-                      <div>
-                        <Label>{language === 'en' ? 'PIN' : 'PIN'}</Label>
-                        <div className="relative mt-1.5">
-                          <Input type={showPin ? 'text' : 'password'} value={formPin} onChange={(e) => setFormPin(e.target.value)} placeholder="Numeric PIN" />
-                          <button type="button" onClick={() => setShowPin(!showPin)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                            {showPin ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                          </button>
-                        </div>
-                      </div>
-                      <div>
-                        <Label>{language === 'en' ? 'Confirm PIN' : 'Emeza PIN'}</Label>
-                        <div className="relative mt-1.5">
-                          <Input type={showPin ? 'text' : 'password'} value={formConfirmPin} onChange={(e) => setFormConfirmPin(e.target.value)} placeholder="Confirm PIN" />
-                          <button type="button" onClick={() => setShowPin(!showPin)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                            {showPin ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                          </button>
-                        </div>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <div>
-                        <Label>{language === 'en' ? 'Password' : 'Ijambo ry\'ibanga'}</Label>
-                        <div className="relative mt-1.5">
-                          <Input type={showPassword ? 'text' : 'password'} value={formPassword} onChange={(e) => setFormPassword(e.target.value)} placeholder="Enter password" />
-                          <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                          </button>
-                        </div>
-                      </div>
-                      <div>
-                        <Label>{language === 'en' ? 'Confirm Password' : 'Emeza Ijambo ry\'ibanga'}</Label>
-                        <div className="relative mt-1.5">
-                          <Input type={showPassword ? 'text' : 'password'} value={formConfirmPassword} onChange={(e) => setFormConfirmPassword(e.target.value)} placeholder="Confirm password" />
-                          <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                          </button>
-                        </div>
-                      </div>
-                    </>
-                  )}
-                </div>
+                <FormFields 
+                  language={language} 
+                  t={t}
+                  formName={formName} setFormName={setFormName}
+                  formPhone={formPhone} setFormPhone={setFormPhone}
+                  formEmail={formEmail} setFormEmail={setFormEmail}
+                  formAge={formAge} setFormAge={setFormAge}
+                  formGender={formGender} setFormGender={setFormGender}
+                  formAddress={formAddress} setFormAddress={setFormAddress}
+                  formCommMethod={formCommMethod} setFormCommMethod={setFormCommMethod}
+                  formPassword={formPassword} setFormPassword={setFormPassword}
+                  formConfirmPassword={formConfirmPassword} setFormConfirmPassword={setFormConfirmPassword}
+                  formPin={formPin} setFormPin={setFormPin}
+                  formConfirmPin={formConfirmPin} setFormConfirmPin={setFormConfirmPin}
+                  showPassword={showPassword} setShowPassword={setShowPassword}
+                  showPin={showPin} setShowPin={setShowPin}
+                />
                 <DialogFooter className="mt-4">
                   <DialogClose asChild><Button type="button" variant="outline">{language === 'en' ? 'Cancel' : 'Hagarika'}</Button></DialogClose>
                   <Button type="submit">{language === 'en' ? 'Register' : 'Andikisha'}</Button>
@@ -387,92 +320,23 @@ export default function ProviderPatients() {
             <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto p-6">
               <DialogHeader><DialogTitle className="font-heading">{language === 'en' ? 'Edit Patient' : 'Hindura Umurwayi'}</DialogTitle></DialogHeader>
               <form onSubmit={(e) => { e.preventDefault(); handleEdit(); }} className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="col-span-2">
-                    <Label>{language === 'en' ? 'Full Name' : 'Amazina Yose'}</Label>
-                    <Input autoFocus value={formName} onChange={(e) => setFormName(e.target.value)} placeholder="Patient name" className="mt-1.5" />
-                  </div>
-                  <div>
-                    <Label>{language === 'en' ? 'Phone' : 'Telefoni'}</Label>
-                    <Input value={formPhone} onChange={(e) => setFormPhone(e.target.value)} placeholder="+250..." className="mt-1.5" />
-                  </div>
-                  <div>
-                    <Label>{t('email')}</Label>
-                    <Input value={formEmail} onChange={(e) => setFormEmail(e.target.value)} placeholder="email@example.com" className="mt-1.5" />
-                  </div>
-                  <div>
-                    <Label>{language === 'en' ? 'Age' : 'Imyaka'}</Label>
-                    <Input type="number" value={formAge} onChange={(e) => setFormAge(e.target.value)} placeholder="25" className="mt-1.5" />
-                  </div>
-                  <div>
-                    <Label>{language === 'en' ? 'Gender' : 'Igitsina'}</Label>
-                    <Select value={formGender} onValueChange={(v) => setFormGender(v as any)}>
-                      <SelectTrigger className="mt-1.5"><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Male">{language === 'en' ? 'Male' : 'Gabo'}</SelectItem>
-                        <SelectItem value="Female">{language === 'en' ? 'Female' : 'Gore'}</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="col-span-2">
-                    <Label>{language === 'en' ? 'Address' : 'Aderesi'}</Label>
-                    <Input value={formAddress} onChange={(e) => setFormAddress(e.target.value)} placeholder="District, Sector" className="mt-1.5" />
-                  </div>
-                  <div className="col-span-2">
-                    <Label>{language === 'en' ? 'Communication Method' : 'Uburyo bwo Gutumanaho'}</Label>
-                    <Select value={formCommMethod} onValueChange={(v) => setFormCommMethod(v as any)}>
-                      <SelectTrigger className="mt-1.5"><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="web">{language === 'en' ? 'Web/App' : 'Web/App'}</SelectItem>
-                        <SelectItem value="ussd">USSD</SelectItem>
-                        <SelectItem value="both">{language === 'en' ? 'Both (Web + USSD)' : 'Byombi (Web + USSD)'}</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  {formCommMethod === 'ussd' ? (
-                    <>
-                      <div>
-                        <Label>{language === 'en' ? 'PIN' : 'PIN'}</Label>
-                        <div className="relative mt-1.5">
-                          <Input type={showPin ? 'text' : 'password'} value={formPin} onChange={(e) => setFormPin(e.target.value)} placeholder="Numeric PIN" />
-                          <button type="button" onClick={() => setShowPin(!showPin)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                            {showPin ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                          </button>
-                        </div>
-                      </div>
-                      <div>
-                        <Label>{language === 'en' ? 'Confirm PIN' : 'Emeza PIN'}</Label>
-                        <div className="relative mt-1.5">
-                          <Input type={showPin ? 'text' : 'password'} value={formConfirmPin} onChange={(e) => setFormConfirmPin(e.target.value)} placeholder="Confirm PIN" />
-                          <button type="button" onClick={() => setShowPin(!showPin)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                            {showPin ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                          </button>
-                        </div>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <div>
-                        <Label>{language === 'en' ? 'Password' : 'Ijambo ry\'ibanga'}</Label>
-                        <div className="relative mt-1.5">
-                          <Input type={showPassword ? 'text' : 'password'} value={formPassword} onChange={(e) => setFormPassword(e.target.value)} placeholder="Enter password" />
-                          <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                          </button>
-                        </div>
-                      </div>
-                      <div>
-                        <Label>{language === 'en' ? 'Confirm Password' : 'Emeza Ijambo ry\'ibanga'}</Label>
-                        <div className="relative mt-1.5">
-                          <Input type={showPassword ? 'text' : 'password'} value={formConfirmPassword} onChange={(e) => setFormConfirmPassword(e.target.value)} placeholder="Confirm password" />
-                          <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                          </button>
-                        </div>
-                      </div>
-                    </>
-                  )}
-                </div>
+                <FormFields 
+                  language={language} 
+                  t={t}
+                  formName={formName} setFormName={setFormName}
+                  formPhone={formPhone} setFormPhone={setFormPhone}
+                  formEmail={formEmail} setFormEmail={setFormEmail}
+                  formAge={formAge} setFormAge={setFormAge}
+                  formGender={formGender} setFormGender={setFormGender}
+                  formAddress={formAddress} setFormAddress={setFormAddress}
+                  formCommMethod={formCommMethod} setFormCommMethod={setFormCommMethod}
+                  formPassword={formPassword} setFormPassword={setFormPassword}
+                  formConfirmPassword={formConfirmPassword} setFormConfirmPassword={setFormConfirmPassword}
+                  formPin={formPin} setFormPin={setFormPin}
+                  formConfirmPin={formConfirmPin} setFormConfirmPin={setFormConfirmPin}
+                  showPassword={showPassword} setShowPassword={setShowPassword}
+                  showPin={showPin} setShowPin={setShowPin}
+                />
                 <DialogFooter className="mt-4">
                   <DialogClose asChild><Button type="button" variant="outline">{language === 'en' ? 'Cancel' : 'Hagarika'}</Button></DialogClose>
                   <Button type="submit">{language === 'en' ? 'Save Changes' : 'Bika Impinduka'}</Button>

@@ -7,6 +7,11 @@ import { UpdateSmsLogDto } from './update-sms-log.dto';
 export class SmsLogController {
   constructor(private readonly smsLogService: SmsLogService) {}
 
+  @Post('broadcast')
+  broadcast(@Body() body: { message: string; patientId?: number; phone?: string }) {
+    return this.smsLogService.broadcast(body.message, body.patientId, body.phone);
+  }
+
   @Post()
   create(@Body() createSmsLogDto: CreateSmsLogDto) {
     return this.smsLogService.create(createSmsLogDto);

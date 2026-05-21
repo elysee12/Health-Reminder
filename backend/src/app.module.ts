@@ -16,9 +16,11 @@ import { HealthGoalModule } from './health-goal/health-goal.module';
 import { SideEffectModule } from './side-effect/side-effect.module';
 import { AppointmentModule } from './appointment/appointment.module';
 import { FollowUpModule } from './follow-up/follow-up.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
     PrismaModule,
     AuthModule,
     UserModule,

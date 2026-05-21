@@ -18,29 +18,59 @@ export class PrescriptionService {
         provider: typeof providerId === 'number' ? { connect: { id: providerId } } : undefined,
         startDate: new Date(startDate),
         endDate: new Date(endDate),
+        reminderType,
+        reminderTimes: reminderTimes as any,
       },
     });
 
-    // Generate reminders
+    await this.generateReminders(prescription.id, patientId, prescription.medication, prescription.dosage, startDate, endDate, reminderType, reminderTimes);
+
+    return prescription;
+  }
+
+  private async generateReminders(
+    prescriptionId: number,
+    patientId: number,
+    medication: string,
+    dosage: string,
+    startDate: string | Date,
+    endDate: string | Date,
+    reminderType: ReminderType,
+    reminderTimes: string[]
+  ) {
+    // Delete existing reminders first
+    await this.prisma.reminder.deleteMany({
+      where: { prescriptionId },
+    });
+
     const remindersToCreate: any[] = [];
     const start = new Date(startDate);
     const end = new Date(endDate);
 
-    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+    let currentDate = new Date(start);
+    currentDate.setHours(0, 0, 0, 0);
+    
+    const endBoundary = new Date(end);
+    endBoundary.setHours(23, 59, 59, 999);
+
+    while (currentDate <= endBoundary) {
       for (const time of reminderTimes) {
         const [hours, minutes] = time.split(':').map(Number);
-        const scheduledTime = new Date(d);
+        const scheduledTime = new Date(currentDate);
         scheduledTime.setHours(hours, minutes, 0, 0);
 
-        remindersToCreate.push({
-          patientId: patientId,
-          prescriptionId: prescription.id,
-          medication: prescription.medication,
-          dosage: prescription.dosage,
-          scheduledTime: scheduledTime,
-          type: reminderType,
-        });
+        if (scheduledTime >= start && scheduledTime <= end) {
+          remindersToCreate.push({
+            patientId,
+            prescriptionId,
+            medication,
+            dosage,
+            scheduledTime,
+            type: reminderType,
+          });
+        }
       }
+      currentDate.setDate(currentDate.getDate() + 1);
     }
 
     if (remindersToCreate.length > 0) {
@@ -48,8 +78,6 @@ export class PrescriptionService {
         data: remindersToCreate,
       });
     }
-
-    return prescription;
   }
 
   async findAll(providerId?: number) {
@@ -75,8 +103,9 @@ export class PrescriptionService {
   }
 
   async update(id: number, updatePrescriptionDto: UpdatePrescriptionDto) {
-    const { startDate, endDate, patientId, providerId, ...rest } = updatePrescriptionDto as any;
-    return this.prisma.prescription.update({
+    const { startDate, endDate, patientId, providerId, reminderType, reminderTimes, ...rest } = updatePrescriptionDto as any;
+    
+    const prescription = await this.prisma.prescription.update({
       where: { id },
       data: {
         ...rest,
@@ -84,8 +113,24 @@ export class PrescriptionService {
         provider: typeof providerId === 'number' ? { connect: { id: providerId } } : undefined,
         startDate: startDate ? new Date(startDate) : undefined,
         endDate: endDate ? new Date(endDate) : undefined,
+        reminderType,
+        reminderTimes: reminderTimes as any,
       },
     });
+
+    // Regenerate reminders using latest values from the updated prescription
+    await this.generateReminders(
+      prescription.id,
+      prescription.patientId,
+      prescription.medication,
+      prescription.dosage,
+      prescription.startDate,
+      prescription.endDate,
+      prescription.reminderType,
+      prescription.reminderTimes as string[]
+    );
+
+    return prescription;
   }
 
   async remove(id: number) {

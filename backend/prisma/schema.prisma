@@ -144,7 +144,7 @@ model Patient {
   userId              Int?                @unique
   name                String
   phone               String              @unique
-  email               String              @unique
+  email               String?             @unique
   age                 Int
   gender              Gender
   address             String
@@ -200,6 +200,8 @@ model Prescription {
   startDate        DateTime
   endDate          DateTime
   status           PrescriptionStatus @default(active)
+  reminderType     ReminderType       @default(web)
+  reminderTimes    Json?
   reminders        Reminder[]
   adherenceRecords AdherenceRecord[]
   sideEffects      SideEffect[]
