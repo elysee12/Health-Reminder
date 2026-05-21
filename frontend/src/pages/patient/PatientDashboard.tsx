@@ -7,6 +7,7 @@ import { LayoutDashboard, Pill, Bell, Clock, CheckCircle, XCircle, AlertCircle, 
 import { useReminders, usePrescriptions, useAdherenceRecords, useHealthGoals, useAppointments } from '@/hooks/use-api';
 import { api } from '@/lib/api';
 import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
 
 const sidebarItems = [
   { label: 'Dashboard', icon: <LayoutDashboard className="h-4 w-4" />, path: '/patient' },
@@ -20,6 +21,7 @@ const sidebarItems = [
 
 export default function PatientDashboard() {
   const { user, t, language } = useAuth();
+  const navigate = useNavigate();
   
   const { data: allReminders = [], isLoading: remindersLoading, refetch: refetchReminders } = useReminders();
   const { data: allPrescriptions = [], isLoading: prescriptionsLoading } = usePrescriptions();
@@ -224,7 +226,7 @@ export default function PatientDashboard() {
                   ) : (
                     <p className="text-[10px] md:text-xs text-muted-foreground italic">No active goals</p>
                   )}
-                  <Button variant="ghost" className="w-full text-[10px] md:text-xs h-8 text-primary font-bold mt-1" onClick={() => window.location.href='/patient/goals'}>
+                  <Button variant="ghost" className="w-full text-[10px] md:text-xs h-8 text-primary font-bold mt-1" onClick={() => navigate('/patient/goals')}>
                     View All Goals
                   </Button>
                 </div>
@@ -253,7 +255,7 @@ export default function PatientDashboard() {
                 ) : (
                   <p className="text-[10px] md:text-xs text-muted-foreground italic">No upcoming appointments</p>
                 )}
-                <Button variant="ghost" className="w-full text-[10px] md:text-xs h-8 mt-2 text-primary font-bold" onClick={() => window.location.href='/patient/appointments'}>
+                <Button variant="ghost" className="w-full text-[10px] md:text-xs h-8 mt-2 text-primary font-bold" onClick={() => navigate('/patient/appointments')}>
                   Book Appointment
                 </Button>
               </CardContent>

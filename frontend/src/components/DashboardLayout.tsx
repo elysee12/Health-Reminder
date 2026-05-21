@@ -4,6 +4,7 @@ import Footer from './Footer';
 import { Menu, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Link, useLocation } from 'react-router-dom';
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -12,6 +13,7 @@ interface DashboardLayoutProps {
 
 export default function DashboardLayout({ children, sidebarItems }: DashboardLayoutProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const location = useLocation();
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
@@ -52,14 +54,16 @@ export default function DashboardLayout({ children, sidebarItems }: DashboardLay
       {/* Bottom Nav for Patients - Only on Mobile */}
       <div className="lg:hidden border-t bg-background/80 backdrop-blur-md sticky bottom-0 z-40 flex justify-around items-center h-16 px-2">
         {sidebarItems.slice(0, 4).map((item) => (
-          <a
+          <Link
             key={item.path}
-            href={item.path}
-            className="flex flex-col items-center gap-1 text-muted-foreground hover:text-primary px-3"
+            to={item.path}
+            className={`flex flex-col items-center gap-1 px-3 transition-colors ${
+              location.pathname === item.path ? 'text-primary' : 'text-muted-foreground hover:text-primary'
+            }`}
           >
             <div className="scale-110">{item.icon}</div>
-            <span className="text-[10px] font-medium uppercase tracking-wider">{item.label.split(' ')[0]}</span>
-          </a>
+            <span className="text-[10px] font-bold uppercase tracking-wider">{item.label.split(' ')[0]}</span>
+          </Link>
         ))}
       </div>
 
