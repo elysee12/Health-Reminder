@@ -5,16 +5,6 @@ import DashboardLayout from '@/components/DashboardLayout';
 import { Card, CardContent } from '@/components/ui/card';
 import { LayoutDashboard, Pill, Bell, History, Target, MessageSquare, Calendar } from 'lucide-react';
 
-const sidebarItems = [
-  { label: 'Dashboard', icon: <LayoutDashboard className="h-4 w-4" />, path: '/patient' },
-  { label: 'Prescriptions', icon: <Pill className="h-4 w-4" />, path: '/patient/prescriptions' },
-  { label: 'Reminders', icon: <Bell className="h-4 w-4" />, path: '/patient/reminders' },
-  { label: 'Target Goals', icon: <Target className="h-4 w-4" />, path: '/patient/goals' },
-  { label: 'Side Effects', icon: <MessageSquare className="h-4 w-4" />, path: '/patient/side-effects' },
-  { label: 'Appointments', icon: <Calendar className="h-4 w-4" />, path: '/patient/appointments' },
-  { label: 'History', icon: <History className="h-4 w-4" />, path: '/patient/history' },
-];
-
 export default function PatientHistory() {
   const { user, t } = useAuth();
   const { data: adherenceRecords = [] } = useAdherenceRecords();
@@ -25,7 +15,7 @@ export default function PatientHistory() {
   );
 
   return (
-    <DashboardLayout sidebarItems={sidebarItems}>
+    <DashboardLayout>
       <div className="animate-fade-in space-y-6">
         <h1 className="page-header">{t('medication_history')}</h1>
         <div className="space-y-3">

@@ -13,16 +13,6 @@ import { api } from '@/lib/api';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 
-const sidebarItems = [
-  { label: 'Dashboard', icon: <LayoutDashboard className="h-4 w-4" />, path: '/patient' },
-  { label: 'Prescriptions', icon: <Pill className="h-4 w-4" />, path: '/patient/prescriptions' },
-  { label: 'Reminders', icon: <Bell className="h-4 w-4" />, path: '/patient/reminders' },
-  { label: 'Target Goals', icon: <Target className="h-4 w-4" />, path: '/patient/goals' },
-  { label: 'Side Effects', icon: <MessageSquare className="h-4 w-4" />, path: '/patient/side-effects' },
-  { label: 'Appointments', icon: <Calendar className="h-4 w-4" />, path: '/patient/appointments' },
-  { label: 'History', icon: <History className="h-4 w-4" />, path: '/patient/history' },
-];
-
 export default function PatientSideEffects() {
   const { user, language } = useAuth();
   const { data: sideEffects = [], isLoading, refetch } = useSideEffects(user?.id);
@@ -64,7 +54,7 @@ export default function PatientSideEffects() {
   };
 
   return (
-    <DashboardLayout sidebarItems={sidebarItems}>
+    <DashboardLayout>
       <div className="animate-fade-in space-y-6">
         <div className="flex items-center justify-between">
           <div>

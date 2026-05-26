@@ -11,16 +11,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { LayoutDashboard, Users, Building2, Settings, Save, Bell, MessageSquare, Globe, Shield, UserPlus, Network } from 'lucide-react';
 import { toast } from 'sonner';
 
-const sidebarItems = [
-  { label: 'Dashboard', icon: <LayoutDashboard className="h-4 w-4" />, path: '/admin' },
-  { label: 'Users', icon: <Users className="h-4 w-4" />, path: '/admin/users' },
-  { label: 'Hospitals', icon: <Building2 className="h-4 w-4" />, path: '/admin/hospitals' },
-  { label: 'Interoperability', icon: <Network className="h-4 w-4" />, path: '/admin/interoperability' },
-  { label: 'Settings', icon: <Settings className="h-4 w-4" />, path: '/admin/settings' },
-];
-
 export default function AdminSettings() {
-  const { language } = useAuth();
+  const { user, t, language } = useAuth();
 
   const [systemName, setSystemName] = useState('mHealth Hypertension Reminder System');
   const [adminEmail, setAdminEmail] = useState('admin@mhealth.rw');
@@ -48,7 +40,7 @@ export default function AdminSettings() {
   };
 
   return (
-    <DashboardLayout sidebarItems={sidebarItems}>
+    <DashboardLayout>
       <div className="animate-fade-in space-y-6">
         <h1 className="page-header">{language === 'en' ? 'System Settings' : "Igenamiterere ry'Sisitemu"}</h1>
 

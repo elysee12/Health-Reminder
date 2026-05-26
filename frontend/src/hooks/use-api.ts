@@ -91,3 +91,42 @@ export function useFollowUps(patientId?: number, providerId?: number) {
     queryFn: () => api.followUps.findAll(patientId, providerId),
   });
 }
+
+/**
+ * Public stats for the login page left panel.
+ * Fetches reminders, hospitals and adherence records in parallel
+ * so the three stat pills show live numbers from the database.
+ */
+export function usePublicStats() {
+  const reminders = useQuery({
+    queryKey: ['public-reminders-count'],
+    queryFn: () => api.reminders.findAll(),
+    staleTime: 60_000,
+    retry: 1,
+  });
+
+  const hospitals = useQuery({
+    queryKey: ['public-hospitals-count'],
+    queryFn: () => api.hospitals.findAll(),
+    staleTime: 60_000,
+    retry: 1,
+  });
+
+  const patients = useQuery({
+    queryKey: ['public-patients-count'],
+    queryFn: () => api.patients.findAll(),
+    staleTime: 60_000,
+    retry: 1,
+  });
+
+  const reminderCount = Array.isArray(reminders.data) ? reminders.data.length : 0;
+  const hospitalCount = Array.isArray(hospitals.data) ? hospitals.data.length : 0;
+  const patientCount  = Array.isArray(patients.data)  ? patients.data.length  : 0;
+
+  return {
+    reminderCount,
+    hospitalCount,
+    patientCount,
+    isLoading: reminders.isLoading || hospitals.isLoading || patients.isLoading,
+  };
+}

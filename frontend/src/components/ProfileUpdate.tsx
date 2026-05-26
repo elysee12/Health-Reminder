@@ -12,7 +12,7 @@ import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 
 interface ProfileUpdateProps {
-  sidebarItems: any[];
+  sidebarItems?: any[];
 }
 
 export default function ProfileUpdate({ sidebarItems }: ProfileUpdateProps) {
@@ -74,7 +74,7 @@ export default function ProfileUpdate({ sidebarItems }: ProfileUpdateProps) {
   };
 
   return (
-    <DashboardLayout sidebarItems={sidebarItems}>
+    <DashboardLayout>
       <div className="animate-fade-in space-y-6">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="sm" onClick={handleBack} className="gap-2">

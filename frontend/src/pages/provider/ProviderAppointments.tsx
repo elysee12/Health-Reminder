@@ -12,19 +12,6 @@ import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 
-const sidebarItems = [
-  { label: 'Dashboard', icon: <LayoutDashboard className="h-4 w-4" />, path: '/provider' },
-  { label: 'Patients', icon: <Users className="h-4 w-4" />, path: '/provider/patients' },
-  { label: 'Prescriptions', icon: <Pill className="h-4 w-4" />, path: '/provider/prescriptions' },
-  { label: 'Reminders', icon: <Bell className="h-4 w-4" />, path: '/provider/reminders' },
-  { label: 'Analytics', icon: <BarChart3 className="h-4 w-4" />, path: '/provider/analytics' },
-  { label: 'Follow-ups', icon: <UserCheck className="h-4 w-4" />, path: '/provider/follow-ups' },
-  { label: 'Patient Goals', icon: <Target className="h-4 w-4" />, path: '/provider/goals' },
-  { label: 'Side Effects', icon: <AlertTriangle className="h-4 w-4" />, path: '/provider/side-effects' },
-  { label: 'Appointments', icon: <Calendar className="h-4 w-4" />, path: '/provider/appointments' },
-  { label: 'SMS Management', icon: <MessageSquare className="h-4 w-4" />, path: '/provider/sms' },
-];
-
 export default function ProviderAppointments() {
   const { language, user } = useAuth();
   const { data: appointments = [], isLoading, refetch } = useAppointments(undefined, undefined, user?.id);
@@ -96,7 +83,7 @@ export default function ProviderAppointments() {
   };
 
   return (
-    <DashboardLayout sidebarItems={sidebarItems}>
+    <DashboardLayout>
       <div className="animate-fade-in space-y-6">
         <div className="flex items-center justify-between">
           <div>

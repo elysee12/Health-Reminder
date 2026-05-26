@@ -5,16 +5,6 @@ import DashboardLayout from '@/components/DashboardLayout';
 import { Card, CardContent } from '@/components/ui/card';
 import { LayoutDashboard, Pill, Bell, History, Target, MessageSquare, Calendar } from 'lucide-react';
 
-const sidebarItems = [
-  { label: 'Dashboard', icon: <LayoutDashboard className="h-4 w-4" />, path: '/patient' },
-  { label: 'Prescriptions', icon: <Pill className="h-4 w-4" />, path: '/patient/prescriptions' },
-  { label: 'Reminders', icon: <Bell className="h-4 w-4" />, path: '/patient/reminders' },
-  { label: 'Target Goals', icon: <Target className="h-4 w-4" />, path: '/patient/goals' },
-  { label: 'Side Effects', icon: <MessageSquare className="h-4 w-4" />, path: '/patient/side-effects' },
-  { label: 'Appointments', icon: <Calendar className="h-4 w-4" />, path: '/patient/appointments' },
-  { label: 'History', icon: <History className="h-4 w-4" />, path: '/patient/history' },
-];
-
 export default function PatientPrescriptions() {
   const { user, t } = useAuth();
   const { data: prescriptions = [] } = usePrescriptions();
@@ -25,7 +15,7 @@ export default function PatientPrescriptions() {
   );
 
   return (
-    <DashboardLayout sidebarItems={sidebarItems}>
+    <DashboardLayout>
       <div className="animate-fade-in space-y-6">
         <h1 className="page-header">{t('prescriptions')}</h1>
         <div className="space-y-4">
@@ -34,17 +24,17 @@ export default function PatientPrescriptions() {
               <CardContent className="p-5">
                 <div className="flex justify-between items-start">
                   <div>
-                    <h3 className="font-heading font-semibold text-lg text-card-foreground">{rx.medication}</h3>
-                    <p className="text-muted-foreground">{rx.dosage} — {rx.frequency}</p>
-                    <p className="text-sm text-muted-foreground mt-2">{rx.startDate} → {rx.endDate}</p>
-                    <p className="text-sm text-muted-foreground">Prescribed by {rx.prescribedBy}</p>
+                    <h3 className="font-heading font-semibold text-lg text-card-foreground">{t(rx.medication)}</h3>
+                    <p className="text-muted-foreground">{t(rx.dosage)} — {t(rx.frequency)}</p>
+                    <p className="text-sm text-muted-foreground mt-2">{new Date(rx.startDate).toLocaleDateString()} → {new Date(rx.endDate).toLocaleDateString()}</p>
+                    <p className="text-sm text-muted-foreground">Prescribed by {rx.provider?.name || rx.prescribedBy}</p>
                   </div>
-                  <span className={rx.status === 'active' ? 'badge-success' : 'badge-warning'}>{rx.status}</span>
+                  <span className={rx.status === 'active' ? 'badge-success px-2 py-0.5 rounded text-xs' : 'badge-warning px-2 py-0.5 rounded text-xs'}>{t(rx.status)}</span>
                 </div>
               </CardContent>
             </Card>
           )) : (
-            <div className="text-sm text-muted-foreground">{t('no_prescriptions_found') || 'No prescriptions available.'}</div>
+            <div className="text-sm text-muted-foreground">{t('no_active_prescriptions')}</div>
           )}
         </div>
       </div>

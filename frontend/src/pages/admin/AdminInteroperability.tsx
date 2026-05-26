@@ -13,16 +13,8 @@ import { useExternalSystems, useApiKeys } from '@/hooks/use-api';
 import { api } from '@/lib/api';
 import { useQueryClient } from '@tanstack/react-query';
 
-const sidebarItems = [
-  { label: 'Dashboard', icon: <LayoutDashboard className="h-4 w-4" />, path: '/admin' },
-  { label: 'Users', icon: <Users className="h-4 w-4" />, path: '/admin/users' },
-  { label: 'Hospitals', icon: <Building2 className="h-4 w-4" />, path: '/admin/hospitals' },
-  { label: 'Interoperability', icon: <Network className="h-4 w-4" />, path: '/admin/interoperability' },
-  { label: 'Settings', icon: <Settings className="h-4 w-4" />, path: '/admin/settings' },
-];
-
 export default function AdminInteroperability() {
-  const { language } = useAuth();
+  const { user, t, language } = useAuth();
   const queryClient = useQueryClient();
   const { data: systems = [], isLoading: systemsLoading } = useExternalSystems();
   const { data: apiKeys = [], isLoading: apiKeysLoading } = useApiKeys();
@@ -35,7 +27,7 @@ export default function AdminInteroperability() {
 
   if (systemsLoading || apiKeysLoading) {
     return (
-      <DashboardLayout sidebarItems={sidebarItems}>
+      <DashboardLayout>
         <div className="p-8 text-center">Loading interoperability data...</div>
       </DashboardLayout>
     );
@@ -62,7 +54,7 @@ export default function AdminInteroperability() {
   };
 
   return (
-    <DashboardLayout sidebarItems={sidebarItems}>
+    <DashboardLayout>
       <div className="animate-fade-in space-y-6">
         <div className="flex items-center justify-between">
           <div>

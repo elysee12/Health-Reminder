@@ -13,19 +13,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from 'sonner';
 import { LayoutDashboard, Users, Pill, Bell, BarChart3, MessageSquare, Search, Plus, Pencil, Trash2, Eye, EyeOff, Target, Calendar, UserCheck, AlertTriangle } from 'lucide-react';
 
-const sidebarItems = [
-  { label: 'Dashboard', icon: <LayoutDashboard className="h-4 w-4" />, path: '/provider' },
-  { label: 'Patients', icon: <Users className="h-4 w-4" />, path: '/provider/patients' },
-  { label: 'Prescriptions', icon: <Pill className="h-4 w-4" />, path: '/provider/prescriptions' },
-  { label: 'Reminders', icon: <Bell className="h-4 w-4" />, path: '/provider/reminders' },
-  { label: 'Analytics', icon: <BarChart3 className="h-4 w-4" />, path: '/provider/analytics' },
-  { label: 'Follow-ups', icon: <UserCheck className="h-4 w-4" />, path: '/provider/follow-ups' },
-  { label: 'Patient Goals', icon: <Target className="h-4 w-4" />, path: '/provider/goals' },
-  { label: 'Side Effects', icon: <AlertTriangle className="h-4 w-4" />, path: '/provider/side-effects' },
-  { label: 'Appointments', icon: <Calendar className="h-4 w-4" />, path: '/provider/appointments' },
-  { label: 'SMS Management', icon: <MessageSquare className="h-4 w-4" />, path: '/provider/sms' },
-];
-
 type FormFieldsProps = {
   language: string;
   t: (key: string) => string;
@@ -246,7 +233,7 @@ export default function ProviderPatients() {
   };
 
   return (
-    <DashboardLayout sidebarItems={sidebarItems}>
+    <DashboardLayout>
       <div className="animate-fade-in space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="page-header">{t('patients')}</h1>

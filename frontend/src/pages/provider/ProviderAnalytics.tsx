@@ -6,23 +6,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LayoutDashboard, Users, Pill, Bell, BarChart3, MessageSquare, Target, Calendar, UserCheck, AlertTriangle } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 
-const sidebarItems = [
-  { label: 'Dashboard', icon: <LayoutDashboard className="h-4 w-4" />, path: '/provider' },
-  { label: 'Patients', icon: <Users className="h-4 w-4" />, path: '/provider/patients' },
-  { label: 'Prescriptions', icon: <Pill className="h-4 w-4" />, path: '/provider/prescriptions' },
-  { label: 'Reminders', icon: <Bell className="h-4 w-4" />, path: '/provider/reminders' },
-  { label: 'Analytics', icon: <BarChart3 className="h-4 w-4" />, path: '/provider/analytics' },
-  { label: 'Follow-ups', icon: <UserCheck className="h-4 w-4" />, path: '/provider/follow-ups' },
-  { label: 'Patient Goals', icon: <Target className="h-4 w-4" />, path: '/provider/goals' },
-  { label: 'Side Effects', icon: <AlertTriangle className="h-4 w-4" />, path: '/provider/side-effects' },
-  { label: 'Appointments', icon: <Calendar className="h-4 w-4" />, path: '/provider/appointments' },
-  { label: 'SMS Management', icon: <MessageSquare className="h-4 w-4" />, path: '/provider/sms' },
-];
+
 
 const COLORS = ['hsl(var(--success))', 'hsl(var(--warning))', 'hsl(var(--destructive))'];
 
 export default function ProviderAnalytics() {
-  const { t, user } = useAuth();
+  const { t, user, language } = useAuth();
   const { data: patients = [], isLoading: patientsLoading } = usePatients(user?.id);
   const { data: adherenceRecords = [], isLoading: adherenceLoading } = useAdherenceRecords(user?.id);
 
@@ -50,14 +39,14 @@ export default function ProviderAnalytics() {
 
   if (patientsLoading || adherenceLoading) {
     return (
-      <DashboardLayout sidebarItems={sidebarItems}>
+      <DashboardLayout>
         <div className="p-8 text-center">Loading analytics...</div>
       </DashboardLayout>
     );
   }
 
   return (
-    <DashboardLayout sidebarItems={sidebarItems}>
+    <DashboardLayout>
       <div className="animate-fade-in space-y-6">
         <h1 className="page-header">Adherence {t('reports')}</h1>
 

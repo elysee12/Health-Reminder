@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/lib/auth-context";
 import Login from "./pages/Login";
+import Index from "./pages/Index";
 import PatientDashboard from "./pages/patient/PatientDashboard";
 import PatientPrescriptions from "./pages/patient/PatientPrescriptions";
 import PatientReminders from "./pages/patient/PatientReminders";
@@ -44,6 +45,7 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Login />} />
+            <Route path="/home" element={<Index />} />
             <Route path="/patient" element={<PatientDashboard />} />
             <Route path="/patient/prescriptions" element={<PatientPrescriptions />} />
             <Route path="/patient/reminders" element={<PatientReminders />} />

@@ -10,19 +10,6 @@ import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
 import { Badge } from '@/components/ui/badge';
 
-const sidebarItems = [
-  { label: 'Dashboard', icon: <LayoutDashboard className="h-4 w-4" />, path: '/provider' },
-  { label: 'Patients', icon: <Users className="h-4 w-4" />, path: '/provider/patients' },
-  { label: 'Prescriptions', icon: <Pill className="h-4 w-4" />, path: '/provider/prescriptions' },
-  { label: 'Reminders', icon: <Bell className="h-4 w-4" />, path: '/provider/reminders' },
-  { label: 'Analytics', icon: <BarChart3 className="h-4 w-4" />, path: '/provider/analytics' },
-  { label: 'Follow-ups', icon: <UserCheck className="h-4 w-4" />, path: '/provider/follow-ups' },
-  { label: 'Patient Goals', icon: <Target className="h-4 w-4" />, path: '/provider/goals' },
-  { label: 'Side Effects', icon: <AlertTriangle className="h-4 w-4" />, path: '/provider/side-effects' },
-  { label: 'Appointments', icon: <Calendar className="h-4 w-4" />, path: '/provider/appointments' },
-  { label: 'SMS Management', icon: <MessageSquare className="h-4 w-4" />, path: '/provider/sms' },
-];
-
 export default function ProviderReminders() {
   const { t, user, language } = useAuth();
   const queryClient = useQueryClient();
@@ -60,14 +47,14 @@ export default function ProviderReminders() {
 
   if (remindersLoading || patientsLoading || prescriptionsLoading) {
     return (
-      <DashboardLayout sidebarItems={sidebarItems}>
+      <DashboardLayout>
         <div className="p-8 text-center">Loading reminders...</div>
       </DashboardLayout>
     );
   }
 
   return (
-    <DashboardLayout sidebarItems={sidebarItems}>
+    <DashboardLayout>
       <div className="animate-fade-in space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="page-header">Reminder Monitoring</h1>

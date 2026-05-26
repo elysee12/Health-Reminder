@@ -14,19 +14,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { LayoutDashboard, Users, Pill, Bell, BarChart3, MessageSquare, Send, CheckCircle, Clock, XCircle, Info, Target, Calendar, UserCheck, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 
-const sidebarItems = [
-  { label: 'Dashboard', icon: <LayoutDashboard className="h-4 w-4" />, path: '/provider' },
-  { label: 'Patients', icon: <Users className="h-4 w-4" />, path: '/provider/patients' },
-  { label: 'Prescriptions', icon: <Pill className="h-4 w-4" />, path: '/provider/prescriptions' },
-  { label: 'Reminders', icon: <Bell className="h-4 w-4" />, path: '/provider/reminders' },
-  { label: 'Analytics', icon: <BarChart3 className="h-4 w-4" />, path: '/provider/analytics' },
-  { label: 'Follow-ups', icon: <UserCheck className="h-4 w-4" />, path: '/provider/follow-ups' },
-  { label: 'Patient Goals', icon: <Target className="h-4 w-4" />, path: '/provider/goals' },
-  { label: 'Side Effects', icon: <AlertTriangle className="h-4 w-4" />, path: '/provider/side-effects' },
-  { label: 'Appointments', icon: <Calendar className="h-4 w-4" />, path: '/provider/appointments' },
-  { label: 'SMS Management', icon: <MessageSquare className="h-4 w-4" />, path: '/provider/sms' },
-];
-
 const SMS_SUPPORT_FOOTER = '\n---\nFor support: Call +250 788 000 100 | SMS: +250 722 000 200 | Email: support@mhealth.rw';
 
 const smsTemplates = {
@@ -37,10 +24,10 @@ const smsTemplates = {
 };
 
 export default function ProviderSMS() {
-  const { t, language, user } = useAuth();
+  const { user, t, language } = useAuth();
   const queryClient = useQueryClient();
   const { data: patients = [] } = usePatients(user?.id);
-  const { data: logs = [] } = useSmsLogs(user?.id);
+  const { data: smsLogs = [], isLoading } = useSmsLogs(user?.id);
   const [sendOpen, setSendOpen] = useState(false);
   const [recipient, setRecipient] = useState('');
   const [customPhone, setCustomPhone] = useState('');
@@ -50,14 +37,14 @@ export default function ProviderSMS() {
 
   // Auto-refresh logs if there are pending messages
   useEffect(() => {
-    const hasPending = (logs ?? []).some((s: any) => s.status === 'pending');
+    const hasPending = (smsLogs ?? []).some((s: any) => s.status === 'pending');
     if (hasPending) {
       const interval = setInterval(() => {
-        queryClient.invalidateQueries(['sms-logs']);
+        queryClient.invalidateQueries({ queryKey: ['sms-logs'] });
       }, 2000);
       return () => clearInterval(interval);
     }
-  }, [logs, queryClient]);
+  }, [smsLogs, queryClient]);
 
   const broadcastMutation = useMutation({
     mutationFn: api.smsLogs.broadcast,
@@ -74,8 +61,8 @@ export default function ProviderSMS() {
     (p: any) => p.communicationMethod === 'sms' || p.communicationMethod === 'both',
   );
 
-  const deliveredCount = (logs ?? []).filter((s: any) => s.status === 'delivered').length;
-  const failedCount = (logs ?? []).filter((s: any) => s.status === 'failed').length;
+  const deliveredCount = (smsLogs ?? []).filter((s: any) => s.status === 'delivered').length;
+  const failedCount = (smsLogs ?? []).filter((s: any) => s.status === 'failed').length;
 
   const applyTemplate = (key: string) => {
     setTemplate(key);
@@ -136,7 +123,7 @@ export default function ProviderSMS() {
   };
 
   return (
-    <DashboardLayout sidebarItems={sidebarItems}>
+    <DashboardLayout>
       <div className="animate-fade-in space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="page-header">{t('sms_management')}</h1>
@@ -227,7 +214,7 @@ export default function ProviderSMS() {
         </div>
 
         <div className="grid sm:grid-cols-3 gap-4">
-          <div className="stat-card"><div className="text-2xl font-bold font-heading text-card-foreground">{(logs ?? []).length}</div><div className="text-sm text-muted-foreground">{language === 'en' ? 'Total Sent' : 'Byose Byoherejwe'}</div></div>
+          <div className="stat-card"><div className="text-2xl font-bold font-heading text-card-foreground">{(smsLogs ?? []).length}</div><div className="text-sm text-muted-foreground">{language === 'en' ? 'Total Sent' : 'Byose Byoherejwe'}</div></div>
           <div className="stat-card"><div className="text-2xl font-bold font-heading text-success">{deliveredCount}</div><div className="text-sm text-muted-foreground">{language === 'en' ? 'Delivered' : 'Byageze'}</div></div>
           <div className="stat-card"><div className="text-2xl font-bold font-heading text-destructive">{failedCount}</div><div className="text-sm text-muted-foreground">{language === 'en' ? 'Failed' : 'Byanze'}</div></div>
         </div>
@@ -236,7 +223,7 @@ export default function ProviderSMS() {
           <CardHeader><CardTitle className="font-heading">{language === 'en' ? 'SMS Log' : 'Amakuru ya SMS'}</CardTitle></CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {(logs ?? []).map((sms: any) => (
+              {(smsLogs ?? []).map((sms: any) => (
                 <div key={sms.id} className="flex items-center justify-between p-4 rounded-lg border">
                   <div className="flex items-center gap-4">
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
