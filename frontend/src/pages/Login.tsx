@@ -203,9 +203,9 @@ export default function Login() {
   const RoleIcon = reqRole === 'provider' ? Stethoscope : reqRole === 'admin' ? ShieldCheck : User;
 
   const leftFeatures = [
-    { Icon: Activity,     text: language === 'en' ? 'Real-time BP monitoring'  : 'Gukurikirana umuvuduko' },
-    { Icon: Bell,         text: language === 'en' ? 'SMS medication reminders' : "Ibibutsa by'imiti SMS"  },
-    { Icon: CheckCircle2, text: language === 'en' ? '95% adherence rate'       : 'Ubukurikire bwa 95%'   },
+    { Icon: Activity,     text: t('real_time_bp')   },
+    { Icon: Bell,         text: t('sms_reminders')  },
+    { Icon: CheckCircle2, text: t('adherence_95')   },
   ];
 
   return (
@@ -242,7 +242,7 @@ export default function Login() {
         <div className="relative z-10 space-y-6">
           <div className="inline-flex items-center gap-2 glass rounded-full px-4 py-2 text-xs font-semibold text-emerald-300">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            {language === 'en' ? 'Rwanda Health Platform' : "Urubuga rw'Ubuzima rw'u Rwanda"}
+            {t('rwanda_health_platform')}
           </div>
           <h1 className="font-heading text-4xl xl:text-5xl font-extrabold text-white leading-[1.1] tracking-tight">
             {language === 'en'
@@ -270,17 +270,17 @@ export default function Login() {
         <div className="relative z-10 grid grid-cols-3 gap-3">
           <StatPill
             value={statsLoading ? '…' : reminderCount >= 1000 ? `${(reminderCount / 1000).toFixed(1)}k+` : `${reminderCount}+`}
-            label={language === 'en' ? 'Reminders Sent' : 'Ibibutsa'}
+            label={t('reminders_sent')}
             delay={0}
           />
           <StatPill
             value={statsLoading ? '…' : `${hospitalCount}+`}
-            label={language === 'en' ? 'Health Centers' : 'Ibigo'}
+            label={t('health_centers')}
             delay={100}
           />
           <StatPill
             value={statsLoading ? '…' : patientCount >= 1000 ? `${(patientCount / 1000).toFixed(1)}k+` : `${patientCount}+`}
-            label={language === 'en' ? 'Patients' : 'Abarwayi'}
+            label={t('patients')}
             delay={200}
           />
         </div>

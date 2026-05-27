@@ -87,7 +87,7 @@ export default function AdminDashboard() {
     </DashboardLayout>
   );
 
-  const greeting = new Date().getHours() < 12 ? 'Good morning' : new Date().getHours() < 17 ? 'Good afternoon' : 'Good evening';
+  const greeting = new Date().getHours() < 12 ? t('good_morning') : new Date().getHours() < 17 ? t('good_afternoon') : t('good_evening');
 
   return (
     <DashboardLayout>
@@ -100,9 +100,7 @@ export default function AdminDashboard() {
             <h1 className="font-heading text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight">
               {t('welcome')}, {user?.name?.split(' ')[0]}<span className="text-emerald-500">.</span>
             </h1>
-            <p className="text-slate-500 text-sm mt-1">
-              {language === 'en' ? 'System Administration Dashboard' : "Ikibaho cy'Ubuyobozi bwa Sisitemu"}
-            </p>
+            <p className="text-slate-500 text-sm mt-1">{t('admin_dashboard_subtitle')}</p>
           </div>
           <div className="hidden md:flex items-center gap-2 bg-white border border-slate-200 rounded-2xl px-4 py-2.5 shadow-sm">
             <Activity className="h-4 w-4 text-emerald-500" />
@@ -138,7 +136,7 @@ export default function AdminDashboard() {
           <StatCard label={t('total_users')}    value={users.length}    icon={Users}         gradient="from-blue-500 to-cyan-500"      delay={0}   sub={`${activeUsers} active`} />
           <StatCard label={t('hospitals')}      value={hospitals.length} icon={Building2}    gradient="from-emerald-500 to-teal-500"   delay={60}  />
           <StatCard label={t('active_users')}   value={activeUsers}     icon={CheckCircle}   gradient="from-green-500 to-emerald-500"  delay={120} />
-          <StatCard label={t('pending_requests')} value={pendingReqs}   icon={Clock}         gradient="from-amber-400 to-orange-500"   delay={180} onClick={() => navigate('/admin/users')} sub="Click to review" />
+          <StatCard label={t('pending_requests')} value={pendingReqs}   icon={Clock}         gradient="from-amber-400 to-orange-500"   delay={180} onClick={() => navigate('/admin/users')} sub={t('click_to_review')} />
           <StatCard label={t('high_risk_bp')}   value={highRisk}        icon={AlertTriangle} gradient="from-red-400 to-rose-500"       delay={240} />
         </div>
 
@@ -159,7 +157,7 @@ export default function AdminDashboard() {
                 <thead>
                   <tr>
                     <th>{t('user')}</th>
-                    <th>{language === 'en' ? 'Role' : 'Uruhare'}</th>
+                    <th>{t('role')}</th>
                     <th>{t('status')}</th>
                     <th>{t('hospitals')}</th>
                   </tr>
@@ -197,7 +195,7 @@ export default function AdminDashboard() {
             {/* Role distribution pie */}
             <div className="dash-card">
               <div className="dash-card-header">
-                <h3 className="dash-card-title"><TrendingUp className="h-4 w-4 text-violet-500" />User Distribution</h3>
+                <h3 className="dash-card-title"><TrendingUp className="h-4 w-4 text-violet-500" />{t('user_distribution')}</h3>
               </div>
               <div className="p-4 flex flex-col items-center">
                 <ResponsiveContainer width="100%" height={160}>
@@ -223,7 +221,7 @@ export default function AdminDashboard() {
             {/* Quick actions */}
             <div className="dash-card">
               <div className="dash-card-header">
-                <h3 className="dash-card-title"><Settings className="h-4 w-4 text-slate-500" />Quick Actions</h3>
+                <h3 className="dash-card-title"><Settings className="h-4 w-4 text-slate-500" />{t('quick_actions')}</h3>
               </div>
               <div className="p-3 space-y-1.5">
                 {[

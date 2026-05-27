@@ -117,7 +117,7 @@ export default function PatientDashboard() {
   );
 
   const hour = new Date().getHours();
-  const greeting = hour < 12 ? '🌅 Good morning' : hour < 17 ? '☀️ Good afternoon' : '🌙 Good evening';
+  const greeting = hour < 12 ? `🌅 ${t('good_morning')}` : hour < 17 ? `☀️ ${t('good_afternoon')}` : `🌙 ${t('good_evening')}`;
   const firstName = user?.name?.split(' ')[0] ?? 'there';
 
   return (
@@ -196,8 +196,8 @@ export default function PatientDashboard() {
           {[
             { icon: Pill,     label: t('prescriptions'), path: '/patient/prescriptions', color: 'text-emerald-600', bg: 'bg-emerald-50 border-emerald-200' },
             { icon: Bell,     label: t('reminders'),     path: '/patient/reminders',     color: 'text-amber-600',   bg: 'bg-amber-50 border-amber-200',   badge: pendingCount },
-            { icon: Target,   label: 'Goals',            path: '/patient/goals',         color: 'text-violet-600',  bg: 'bg-violet-50 border-violet-200'  },
-            { icon: Calendar, label: 'Visits',           path: '/patient/appointments',  color: 'text-blue-600',    bg: 'bg-blue-50 border-blue-200',     badge: upcoming.length },
+            { icon: Target,   label: t('goals'),         path: '/patient/goals',         color: 'text-violet-600',  bg: 'bg-violet-50 border-violet-200'  },
+            { icon: Calendar, label: t('visits'),        path: '/patient/appointments',  color: 'text-blue-600',    bg: 'bg-blue-50 border-blue-200',     badge: upcoming.length },
           ].map(({ icon: Icon, label, path, color, bg, badge }) => (
             <button key={path} onClick={() => navigate(path)}
               className={`relative flex flex-col items-center gap-1.5 py-3.5 rounded-2xl border ${bg} active:scale-95 transition-transform`}>
@@ -225,7 +225,7 @@ export default function PatientDashboard() {
               <span className="font-heading font-bold text-slate-800 text-base">{t('medication_schedule')}</span>
             </div>
             <span className="text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full">
-              {activeRx.length} active
+              {activeRx.length} {t('active_label')}
             </span>
           </div>
 
@@ -305,7 +305,7 @@ export default function PatientDashboard() {
                   <Pill className="h-6 w-6 text-slate-300" />
                 </div>
                 <p className="text-sm font-semibold">{t('no_active_prescriptions')}</p>
-                <p className="text-xs text-slate-300 mt-1">Your medications will appear here</p>
+                <p className="text-xs text-slate-300 mt-1">{t('no_active_prescriptions')}</p>
               </div>
             )}
           </div>
@@ -320,13 +320,13 @@ export default function PatientDashboard() {
               <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
                 <TrendingUp className="h-4 w-4 text-white" />
               </div>
-              <span className="font-heading font-bold text-slate-800 text-base">Weekly Trend</span>
+              <span className="font-heading font-bold text-slate-800 text-base">{t('weekly_trend')}</span>
             </div>
             <span className={`text-xs font-bold px-2.5 py-1 rounded-full border ${
               adherencePct >= 80 ? 'text-emerald-700 bg-emerald-50 border-emerald-200' :
               adherencePct >= 60 ? 'text-amber-700 bg-amber-50 border-amber-200' :
                                    'text-red-700 bg-red-50 border-red-200'
-            }`}>{adherencePct}% avg</span>
+            }`}>{adherencePct}% {t('avg_label')}</span>
           </div>
           <div className="px-2 pb-4 pt-3">
             <ResponsiveContainer width="100%" height={150}>
@@ -341,7 +341,7 @@ export default function PatientDashboard() {
                 <XAxis dataKey="day" tick={{ fontSize: 11, fill: '#94a3b8', fontWeight: 600 }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} domain={[0, 100]} unit="%" />
                 <Tooltip
-                  formatter={(v: any) => [`${v}%`, 'Adherence']}
+                  formatter={(v: any) => [`${v}%`, t('adherence')]}
                   contentStyle={{ fontSize: 12, borderRadius: 12, border: '1px solid #e2e8f0', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }} />
                 <Area type="monotone" dataKey="rate" stroke="#8b5cf6" strokeWidth={2.5}
                   fill="url(#wGrad)"
@@ -391,7 +391,7 @@ export default function PatientDashboard() {
                 <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center mb-2">
                   <Calendar className="h-5 w-5 text-slate-300" />
                 </div>
-                <p className="text-xs font-semibold">No upcoming appointments</p>
+                <p className="text-xs font-semibold">{t('no_upcoming_appointments')}</p>
               </div>
             )}
             <button
@@ -400,7 +400,7 @@ export default function PatientDashboard() {
                          bg-gradient-to-r from-blue-500 to-cyan-500
                          py-3.5 rounded-2xl shadow-sm active:scale-95 transition-transform">
               <Bell className="h-4 w-4" />
-              Book Appointment
+              {t('book_appointment')}
             </button>
           </div>
         </div>
@@ -436,7 +436,7 @@ export default function PatientDashboard() {
                   <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
                     <div className={`h-full bg-gradient-to-r ${colors[i % 3]} rounded-full`} style={{ width: '45%' }} />
                   </div>
-                  <p className="text-[10px] text-slate-400 mt-1 text-right font-medium">45% complete</p>
+                  <p className="text-[10px] text-slate-400 mt-1 text-right font-medium">45% {t('complete')}</p>
                 </div>
               );
             }) : (
@@ -461,14 +461,8 @@ export default function PatientDashboard() {
               <Zap className="h-6 w-6 text-white" />
             </div>
             <div>
-              <p className="font-heading font-extrabold text-white text-sm">
-                {language === 'en' ? 'Keep it up!' : 'Komeza!'}
-              </p>
-              <p className="text-white/80 text-xs mt-1 leading-relaxed">
-                {language === 'en'
-                  ? "Taking your medication consistently helps control your blood pressure. You're doing great!"
-                  : "Gufata imiti yawe buri gihe bifasha kugenzura umuvuduko w'amaraso. Urakora neza!"}
-              </p>
+              <p className="font-heading font-extrabold text-white text-sm">{t('keep_it_up')}</p>
+              <p className="text-white/80 text-xs mt-1 leading-relaxed">{t('keep_it_up_msg')}</p>
             </div>
           </div>
         </div>

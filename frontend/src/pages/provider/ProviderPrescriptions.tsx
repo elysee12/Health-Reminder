@@ -297,7 +297,7 @@ export default function ProviderPrescriptions() {
                         </div>
                       </td>
                       <td className="py-3 px-4">
-                        <span className={rx.status === 'active' ? 'badge-success' : rx.status === 'completed' ? 'badge-warning' : 'badge-destructive'}>{rx.status}</span>
+                        <span className={rx.status === 'active' ? 'badge-success' : rx.status === 'completed' ? 'badge-warning' : 'badge-destructive'}>{t(rx.status)}</span>
                       </td>
                       <td className="py-3 px-4 text-right">
                         <div className="flex items-center justify-end gap-1">

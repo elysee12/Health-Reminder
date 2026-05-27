@@ -4,11 +4,10 @@ import { usePatients, useReminders, usePrescriptions } from '@/hooks/use-api';
 import DashboardLayout from '@/components/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { LayoutDashboard, Users, Pill, Bell, BarChart3, MessageSquare, Plus, CheckCircle, Clock, XCircle, Target, Calendar, UserCheck, AlertTriangle, ChevronDown, ChevronRight } from 'lucide-react';
+import { Bell, CheckCircle, Clock, XCircle, ChevronDown, ChevronRight } from 'lucide-react';
 import { api } from '@/lib/api';
 import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
-import { Badge } from '@/components/ui/badge';
 
 export default function ProviderReminders() {
   const { t, user, language } = useAuth();
@@ -48,7 +47,7 @@ export default function ProviderReminders() {
   if (remindersLoading || patientsLoading || prescriptionsLoading) {
     return (
       <DashboardLayout>
-        <div className="p-8 text-center">Loading reminders...</div>
+        <div className="p-8 text-center">{t('loading')}</div>
       </DashboardLayout>
     );
   }
@@ -57,10 +56,10 @@ export default function ProviderReminders() {
     <DashboardLayout>
       <div className="animate-fade-in space-y-6">
         <div className="flex items-center justify-between">
-          <h1 className="page-header">Reminder Monitoring</h1>
-          <Badge variant="outline" className="px-3 py-1">
-            {reminders.length} Total Reminders
-          </Badge>
+          <h1 className="page-header">{t('reminders')}</h1>
+          <span className="text-xs font-semibold bg-muted text-muted-foreground border border-border px-3 py-1 rounded-full">
+            {reminders.length} {t('reminders_label')}
+          </span>
         </div>
 
         <div className="space-y-6">
@@ -87,12 +86,14 @@ export default function ProviderReminders() {
                         {expandedRx[rx.id] ? <ChevronDown className="h-4 w-4 text-muted-foreground" /> : <ChevronRight className="h-4 w-4 text-muted-foreground" />}
                         <div>
                           <CardTitle className="text-base font-bold text-primary">{rx.medication}</CardTitle>
-                          <p className="text-xs text-muted-foreground mt-0.5">Dosage: {rx.dosage} • Frequency: {rx.frequency}</p>
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            {language === 'en' ? 'Dosage' : 'Igipimo'}: {rx.dosage} • {language === 'en' ? 'Frequency' : 'Inshuro'}: {rx.frequency}
+                          </p>
                         </div>
                       </div>
-                      <Badge variant="secondary">
-                        {rx.reminders.length} Reminders
-                      </Badge>
+                      <span className="badge-secondary">
+                        {rx.reminders.length} {t('reminders')}
+                      </span>
                     </CardHeader>
                     
                     {expandedRx[rx.id] && (
@@ -114,26 +115,28 @@ export default function ProviderReminders() {
                                   <div className="text-sm font-medium flex items-center gap-2">
                                     {new Date(rem.scheduledTime).toLocaleString()}
                                     <span className={`text-[10px] uppercase font-bold px-1.5 py-0.5 rounded ${rem.type === 'sms' ? 'bg-orange-100 text-orange-700' : 'bg-blue-100 text-blue-700'}`}>
-                                      {rem.type}
+                                      {rem.type?.toUpperCase()}
                                     </span>
                                   </div>
-                                  <p className="text-xs text-muted-foreground mt-0.5">Status: <span className="capitalize">{rem.status}</span></p>
+                                  <p className="text-xs text-muted-foreground mt-0.5">
+                                    {t('status')}: <span className="capitalize">{t(rem.status)}</span>
+                                  </p>
                                 </div>
                               </div>
 
                               <div className="flex items-center gap-2">
                                 {rem.status !== 'pending' ? (
-                                  <Badge className={
-                                    rem.status === 'taken' ? 'bg-success/10 text-success border-success/20 hover:bg-success/10' :
-                                    rem.status === 'missed' ? 'bg-destructive/10 text-destructive border-destructive/20 hover:bg-destructive/10' :
-                                    'bg-warning/10 text-warning border-warning/20 hover:bg-warning/10'
-                                  } variant="outline">
-                                    {rem.status}
-                                  </Badge>
+                                  <span className={`text-xs font-bold px-2.5 py-1 rounded-full border ${
+                                    rem.status === 'taken'  ? 'bg-success/10 text-success border-success/20' :
+                                    rem.status === 'missed' ? 'bg-destructive/10 text-destructive border-destructive/20' :
+                                    'bg-warning/10 text-warning border-warning/20'
+                                  }`}>
+                                    {t(rem.status)}
+                                  </span>
                                 ) : (
-                                  <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20">
-                                    {language === 'en' ? 'Pending' : 'Iritegereje'}
-                                  </Badge>
+                                  <span className="text-xs font-bold px-2.5 py-1 rounded-full border bg-primary/5 text-primary border-primary/20">
+                                    {t('pending')}
+                                  </span>
                                 )}
                               </div>
                             </div>
@@ -148,8 +151,8 @@ export default function ProviderReminders() {
           )) : (
             <div className="p-12 text-center border-2 border-dashed rounded-xl">
               <Bell className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-muted-foreground">No active reminders found</h3>
-              <p className="text-sm text-muted-foreground/60">Create prescriptions to generate patient reminders.</p>
+              <h3 className="text-lg font-medium text-muted-foreground">{t('no_reminders')}</h3>
+              <p className="text-sm text-muted-foreground/60">{language === 'en' ? 'Create prescriptions to generate patient reminders.' : 'Andika imiti kugira ngo ubone ibibutsa by\'abarwayi.'}</p>
             </div>
           )}
         </div>

@@ -6,7 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { LayoutDashboard, Pill, Bell, History, Target, MessageSquare, Calendar } from 'lucide-react';
 
 export default function PatientPrescriptions() {
-  const { user, t } = useAuth();
+  const { user, t, language } = useAuth();
   const { data: prescriptions = [] } = usePrescriptions();
 
   const myPrescriptions = useMemo(() => 
@@ -27,7 +27,7 @@ export default function PatientPrescriptions() {
                     <h3 className="font-heading font-semibold text-lg text-card-foreground">{t(rx.medication)}</h3>
                     <p className="text-muted-foreground">{t(rx.dosage)} — {t(rx.frequency)}</p>
                     <p className="text-sm text-muted-foreground mt-2">{new Date(rx.startDate).toLocaleDateString()} → {new Date(rx.endDate).toLocaleDateString()}</p>
-                    <p className="text-sm text-muted-foreground">Prescribed by {rx.provider?.name || rx.prescribedBy}</p>
+                    <p className="text-sm text-muted-foreground">{language === 'en' ? 'Prescribed by' : 'Yanditswe na'} {rx.provider?.name || rx.prescribedBy}</p>
                   </div>
                   <span className={rx.status === 'active' ? 'badge-success px-2 py-0.5 rounded text-xs' : 'badge-warning px-2 py-0.5 rounded text-xs'}>{t(rx.status)}</span>
                 </div>

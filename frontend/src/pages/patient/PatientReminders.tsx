@@ -54,14 +54,14 @@ export default function PatientReminders() {
       <div className="animate-fade-in space-y-6">
         <div>
           <h1 className="page-header">{t('reminders')}</h1>
-          <p className="text-muted-foreground">{language === 'en' ? 'View and manage your medication reminders by prescription' : 'Reba no kugerekeza ibibutsa byawe bya miti'}</p>
+          <p className="text-muted-foreground">{t('view_manage_reminders')}</p>
         </div>
 
         <Card>
           <CardHeader>
             <CardTitle className="font-heading flex items-center gap-2">
               <Bell className="h-5 w-5 text-primary" />
-              {language === 'en' ? 'Your Prescriptions' : 'Imiti yawe'}
+              {t('your_prescriptions')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -140,7 +140,7 @@ export default function PatientReminders() {
         {!hasReminders && prescriptionsWithReminders.length > 0 && (
           <Card className="border-muted bg-muted/30">
             <CardContent className="p-6 text-center text-sm text-muted-foreground">
-              {language === 'en' ? 'No reminders scheduled yet. Your reminders will appear here.' : 'Nta miburo yateganijwe. Ibibutsa byawe bizagaragara hano.'}
+              {t('no_reminders_scheduled')}
             </CardContent>
           </Card>
         )}

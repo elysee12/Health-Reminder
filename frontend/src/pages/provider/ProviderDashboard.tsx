@@ -106,7 +106,7 @@ export default function ProviderDashboard() {
     </DashboardLayout>
   );
 
-  const greeting = new Date().getHours() < 12 ? 'Good morning' : new Date().getHours() < 17 ? 'Good afternoon' : 'Good evening';
+  const greeting = new Date().getHours() < 12 ? t('good_morning') : new Date().getHours() < 17 ? t('good_afternoon') : t('good_evening');
 
   return (
     <DashboardLayout>
@@ -120,9 +120,7 @@ export default function ProviderDashboard() {
               {t('welcome')}, {user?.name?.split(' ').pop()}
               <span className="text-emerald-500">.</span>
             </h1>
-            <p className="text-slate-500 text-sm mt-1">
-              {language === 'en' ? 'Hypertension Management Dashboard' : "Ikibaho cyo Gucunga Umuvuduko w'Amaraso"}
-            </p>
+            <p className="text-slate-500 text-sm mt-1">{t('provider_dashboard_subtitle')}</p>
           </div>
           <div className="hidden md:flex items-center gap-2 bg-white border border-slate-200 rounded-2xl px-4 py-2.5 shadow-sm">
             <Activity className="h-4 w-4 text-emerald-500" />
@@ -134,10 +132,10 @@ export default function ProviderDashboard() {
 
         {/* ── Stat cards ──────────────────────────────────────── */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard label={t('patients')}      value={patients.length}        icon={Users}         gradient="bg-gradient-to-r from-blue-500 to-cyan-500"    trend="up"      delay={0}   sub={`${activeRx.length} active Rx`} />
-          <StatCard label={t('pending_today')} value={pendingReminders.length} icon={Clock}        gradient="bg-gradient-to-r from-amber-400 to-orange-500"  trend="neutral" delay={80}  sub="Awaiting confirmation" />
-          <StatCard label={t('missed_today')}  value={missedReminders.length}  icon={XCircle}      gradient="bg-gradient-to-r from-red-400 to-rose-500"      trend="down"    delay={160} sub="Needs follow-up" />
-          <StatCard label={t('high_risk')}     value={highRisk.length}         icon={AlertTriangle} gradient="bg-gradient-to-r from-violet-500 to-purple-600" trend="neutral" delay={240} sub="Below 70% adherence" />
+          <StatCard label={t('patients')}      value={patients.length}         icon={Users}         gradient="bg-gradient-to-r from-blue-500 to-cyan-500"    trend="up"      delay={0}   sub={`${activeRx.length} active Rx`} />
+          <StatCard label={t('pending_today')} value={pendingReminders.length} icon={Clock}         gradient="bg-gradient-to-r from-amber-400 to-orange-500"  trend="neutral" delay={80}  sub={t('awaiting_confirmation')} />
+          <StatCard label={t('missed_today')}  value={missedReminders.length}  icon={XCircle}       gradient="bg-gradient-to-r from-red-400 to-rose-500"      trend="down"    delay={160} sub={t('needs_follow_up')} />
+          <StatCard label={t('high_risk')}     value={highRisk.length}         icon={AlertTriangle} gradient="bg-gradient-to-r from-violet-500 to-purple-600" trend="neutral" delay={240} sub={t('below_70_adherence')} />
         </div>
 
         {/* ── Charts row ──────────────────────────────────────── */}
@@ -150,7 +148,7 @@ export default function ProviderDashboard() {
                 <BarChart3 className="h-4 w-4 text-emerald-500" />
                 {t('weekly_adherence')}
               </h3>
-              <span className="text-xs text-slate-400 font-medium">Last 7 days</span>
+              <span className="text-xs text-slate-400 font-medium">{t('last_7_days')}</span>
             </div>
             <div className="p-5">
               <ResponsiveContainer width="100%" height={220}>
@@ -160,8 +158,8 @@ export default function ProviderDashboard() {
                   <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
                   <Tooltip content={<ChartTooltip />} />
                   <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 11, paddingTop: 12 }} />
-                  <Bar dataKey="taken"  fill="#10b981" radius={[6, 6, 0, 0]} name="Taken" />
-                  <Bar dataKey="missed" fill="#f87171" radius={[6, 6, 0, 0]} name="Missed" />
+                  <Bar dataKey="taken"  fill="#10b981" radius={[6, 6, 0, 0]} name={t('taken_label')} />
+                  <Bar dataKey="missed" fill="#f87171" radius={[6, 6, 0, 0]} name={t('missed_label')} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -172,7 +170,7 @@ export default function ProviderDashboard() {
             <div className="dash-card-header">
               <h3 className="dash-card-title">
                 <TrendingUp className="h-4 w-4 text-emerald-500" />
-                Adherence Trend
+                {t('adherence_trend')}
               </h3>
             </div>
             <div className="p-5">
@@ -188,7 +186,7 @@ export default function ProviderDashboard() {
                   <XAxis dataKey="day" tick={{ fontSize: 11, fill: '#94a3b8', fontWeight: 600 }} axisLine={false} tickLine={false} />
                   <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} domain={[0, 100]} unit="%" />
                   <Tooltip content={<ChartTooltip />} />
-                  <Area type="monotone" dataKey="rate" stroke="#10b981" strokeWidth={2.5} fill="url(#aGrad)" name="Rate %" dot={{ fill: '#10b981', r: 3 }} />
+                  <Area type="monotone" dataKey="rate" stroke="#10b981" strokeWidth={2.5} fill="url(#aGrad)" name={t('adherence')} dot={{ fill: '#10b981', r: 3 }} />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
@@ -205,7 +203,7 @@ export default function ProviderDashboard() {
                 <AlertTriangle className="h-4 w-4 text-amber-500" />
                 {t('high_risk_patients')}
               </h3>
-              <span className="badge-warning">{highRisk.length} patients</span>
+              <span className="badge-warning">{highRisk.length} {t('patients_label')}</span>
             </div>
             <div className="divide-y divide-slate-50">
               {highRisk.length > 0 ? highRisk.slice(0, 5).map((p: any) => (
