@@ -18,15 +18,15 @@ export class ReminderService {
   async handleCron() {
     this.logger.debug('Running medication reminder cron job');
     const now = new Date();
-    const oneMinuteAgo = new Date(now.getTime() - 60 * 1000);
+    const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000); // 5-minute window to avoid missing reminders if server was down
 
-    // Find pending reminders that are due now
+    // Find pending reminders that are due
     const dueReminders = await this.prisma.reminder.findMany({
       where: {
         status: 'pending',
         type: { in: ['sms', 'both'] },
         scheduledTime: {
-          gte: oneMinuteAgo,
+          gte: fiveMinutesAgo,
           lte: now,
         },
       },
@@ -34,15 +34,31 @@ export class ReminderService {
         patient: {
           include: {
             user: true,
+            smsLogs: true, // Get sms logs for patient to check if we already sent
           },
         },
       },
     });
 
+    this.logger.debug(`Found ${dueReminders.length} due reminders to process`);
+
     for (const reminder of dueReminders) {
       const { patient, medication, dosage } = reminder;
+      
       if (patient && patient.phone) {
-        const language = patient.user?.language || 'en';
+        // Check if we already sent a DELIVERED SMS for this reminder (within last 10 mins)
+        const recentDeliveredSms = patient.smsLogs?.filter(log => {
+          const timeDiff = Math.abs(log.createdAt.getTime() - reminder.scheduledTime.getTime());
+          return timeDiff < 10 * 60 * 1000 && log.status === 'delivered'; // Only skip if it was actually delivered
+        });
+
+        if (recentDeliveredSms && recentDeliveredSms.length > 0) {
+          this.logger.debug(`Skipping reminder ${reminder.id} - SMS already delivered to ${patient.phone}`);
+          continue;
+        }
+
+        // Default to Kinyarwanda if language isn't set!
+        const language = patient.user?.language || 'rw';
         let message = '';
 
         if (language === 'rw') {
@@ -51,12 +67,14 @@ export class ReminderService {
           message = `Reminder: It is time to take your medication: ${medication} (${dosage}). Stay healthy!`;
         }
 
-        await this.smsLogService.sendSms(patient.phone, message, patient.id);
+        this.logger.log(`Sending reminder SMS to ${patient.name} (${patient.phone})`);
         
-        // We don't mark as 'taken' automatically, it stays 'pending' until the patient confirms in the app
-        // or it is marked 'missed' by the autoMarkMissedReminders job.
-        // However, we should probably mark that the SMS was sent. 
-        // For now, let's just log it.
+        try {
+          await this.smsLogService.sendSms(patient.phone, message, patient.id);
+          this.logger.log(`Successfully sent SMS for reminder ${reminder.id}`);
+        } catch (error) {
+          this.logger.error(`Failed to send SMS for reminder ${reminder.id}: ${error}`);
+        }
       }
     }
   }

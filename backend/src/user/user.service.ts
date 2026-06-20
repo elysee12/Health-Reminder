@@ -3,10 +3,14 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import * as bcrypt from 'bcrypt';
+import { EmailService } from '../auth/email.service';
 
 @Injectable()
 export class UserService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private emailService: EmailService,
+  ) {}
 
   async create(createUserDto: CreateUserDto) {
     const { password, hospitalId, ...rest } = createUserDto;
@@ -47,13 +51,25 @@ export class UserService {
       data.password = await bcrypt.hash(data.password, 10);
     }
 
-    return this.prisma.user.update({
+    // Get current user to check status before update
+    const currentUser = await this.prisma.user.findUnique({
+      where: { id },
+    });
+
+    const updatedUser = await this.prisma.user.update({
       where: { id },
       data: {
         ...data,
         hospital: typeof hospitalId === 'number' ? { connect: { id: hospitalId } } : undefined,
       },
     });
+
+    // If status changed from something else to 'active', send activation email
+    if (currentUser && currentUser.status !== 'active' && updatedUser.status === 'active') {
+      await this.emailService.sendAccountActivationEmail(updatedUser.email, updatedUser.name);
+    }
+
+    return updatedUser;
   }
 
   async remove(id: number) {

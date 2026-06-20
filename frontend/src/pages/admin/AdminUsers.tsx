@@ -18,6 +18,7 @@ const roleIcon = { admin: Shield, provider: Stethoscope, patient: User };
 
 export default function AdminUsers() {
   const { user, t, language } = useAuth();
+  const queryClient = useQueryClient();
   const { data: users = [], isLoading, refetch } = useUsers();
   
   const [search, setSearch] = useState('');

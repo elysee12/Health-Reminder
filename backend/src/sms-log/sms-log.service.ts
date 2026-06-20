@@ -7,16 +7,11 @@ import { SmsStatus } from '@prisma/client';
 @Injectable()
 export class SmsLogService {
   private readonly logger = new Logger(SmsLogService.name);
-  private readonly brevoApiKey = process.env.BREVO_API_KEY;
-  private readonly smsSender = process.env.BREVO_SMS_SENDER || 'HealthRem'; // Max 11 alphanumeric chars
+  private readonly smsGatewayUrl = process.env.SMS_GATEWAY_URL || 'http://21.29.212.183:8080/send-sms';
 
   constructor(private prisma: PrismaService) {}
 
   async sendSms(phone: string, message: string, patientId?: number) {
-    // Ensure phone number is in E.164 format if possible, but Brevo usually handles it if it starts with +
-    // If it doesn't start with +, we might need to add a default country code, 
-    // but for now let's assume the user provides a valid number or we pass it as is.
-    
     // 1. Create a pending log entry immediately
     const log = await this.create({
       phone,
@@ -33,40 +28,33 @@ export class SmsLogService {
 
   private async processSmsSending(logId: number, phone: string, message: string) {
     try {
-      if (!this.brevoApiKey) {
-        this.logger.error('BREVO_API_KEY is not configured');
-        await this.update(logId, { status: 'failed' });
-        return;
-      }
+      this.logger.log(`Background: Sending SMS to ${phone} via Simple SMS Gateway`);
+      
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10-second timeout
 
-      this.logger.log(`Background: Sending SMS to ${phone} via Brevo`);
-      
-      const url = 'https://api.brevo.com/v3/transactionalSMS/sms';
-      
-      const response = await fetch(url, {
+      const response = await fetch(this.smsGatewayUrl, {
         method: 'POST',
         headers: {
-          'Accept': 'application/json',
           'Content-Type': 'application/json',
-          'api-key': this.brevoApiKey,
         },
-        body: JSON.stringify({
-          type: 'transactional',
-          sender: this.smsSender,
-          recipient: phone.startsWith('+') ? phone : `+${phone}`, // Ensure it has +
-          content: message,
+        body: JSON.stringify({ 
+          phone: phone,
+          message: message 
         }),
+        signal: controller.signal,
       });
 
+      clearTimeout(timeoutId);
+
       if (!response.ok) {
-        const errorData = await response.json();
-        this.logger.error(`Failed to send SMS to ${phone} via Brevo. Status: ${response.status}`, errorData);
+        this.logger.error(`Failed to send SMS to ${phone} via Simple Gateway. Status: ${response.status}`);
         await this.update(logId, { status: 'failed' });
         return;
       }
 
       await this.update(logId, { status: 'delivered' });
-      this.logger.log(`SMS delivered to ${phone} via Brevo`);
+      this.logger.log(`SMS delivered to ${phone} via Simple SMS Gateway`);
     } catch (error) {
       this.logger.error(`Error sending SMS to ${phone}: ${error.message}`);
       await this.update(logId, { status: 'failed' });
