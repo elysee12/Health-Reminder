@@ -30,6 +30,11 @@ export class UserService {
       await this.emailService.sendAccessRequestConfirmation(user.email, user.name);
     }
 
+    // If status is active (admin created user), send credentials email with plain password
+    if (user.status === 'active') {
+      await this.emailService.sendUserCredentials(user.email, user.name, password, user.role);
+    }
+
     return user;
   }
 
@@ -71,9 +76,16 @@ export class UserService {
       },
     });
 
-    // If status changed from something else to 'active', send activation email
-    if (currentUser && currentUser.status !== 'active' && updatedUser.status === 'active') {
+    // If status changed from 'pending' to 'active' (access request approved)
+    if (currentUser && currentUser.status === 'pending' && updatedUser.status === 'active') {
       await this.emailService.sendAccountActivationEmail(updatedUser.email, updatedUser.name);
+    }
+
+    // If status changed from any other status to 'active' and admin created this user (has password in update)
+    if (currentUser && currentUser.status !== 'active' && updatedUser.status === 'active' && data.password) {
+      // This is admin activating and setting password, send credentials
+      // Note: We can't send plain password here since it's already hashed above
+      // Admins should create users with active status directly to send credentials
     }
 
     return updatedUser;

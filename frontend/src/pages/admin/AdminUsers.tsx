@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { LayoutDashboard, Users, Building2, Settings, Plus, Search, Shield, Stethoscope, User, Pencil, Trash2, UserPlus, Network, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { useUsers } from '@/hooks/use-api';
+import { useUsers, useHospitals } from '@/hooks/use-api';
 import { api } from '@/lib/api';
 import { useQueryClient, useMutation } from '@tanstack/react-query';
 import { Badge } from '@/components/ui/badge';
@@ -20,6 +20,7 @@ export default function AdminUsers() {
   const { user, t, language } = useAuth();
   const queryClient = useQueryClient();
   const { data: users = [], isLoading, refetch } = useUsers();
+  const { data: hospitals = [] } = useHospitals();
   
   const [search, setSearch] = useState('');
   const [addOpen, setAddOpen] = useState(false);
@@ -31,9 +32,12 @@ export default function AdminUsers() {
   const [formName, setFormName] = useState('');
   const [formEmail, setFormEmail] = useState('');
   const [formPhone, setFormPhone] = useState('');
-  const [formRole, setFormRole] = useState<any>('patient');
+  const [formPassword, setFormPassword] = useState('');
+  const [formConfirmPassword, setFormConfirmPassword] = useState('');
+  const [formRole, setFormRole] = useState<any>('provider');
   const [formStatus, setFormStatus] = useState<any>('active');
   const [formReason, setFormReason] = useState('');
+  const [formHospitalId, setFormHospitalId] = useState<number | undefined>(undefined);
 
   const createMutation = useMutation({
     mutationFn: api.users.create,
@@ -72,7 +76,7 @@ export default function AdminUsers() {
   );
 
   const resetForm = () => {
-    setFormName(''); setFormEmail(''); setFormPhone(''); setFormRole('patient'); setFormStatus('active'); setFormReason('');
+    setFormName(''); setFormEmail(''); setFormPhone(''); setFormPassword(''); setFormConfirmPassword(''); setFormRole('provider'); setFormStatus('active'); setFormReason(''); setFormHospitalId(undefined);
   };
 
   const handleAdd = () => {
@@ -87,6 +91,21 @@ export default function AdminUsers() {
       return;
     }
 
+    if (!formPassword.trim()) {
+      toast.error(language === 'en' ? 'Please enter a password' : 'Injiza ijambo ry\'ibanga');
+      return;
+    }
+
+    if (formPassword.length < 6) {
+      toast.error(language === 'en' ? 'Password must be at least 6 characters' : 'Ijambo ry\'ibanga rigomba kuba nibura inyuguti 6');
+      return;
+    }
+
+    if (formPassword !== formConfirmPassword) {
+      toast.error(language === 'en' ? 'Passwords do not match' : 'Amagambo y\'ibanga ntabwo ahura');
+      return;
+    }
+
     if (formPhone) {
       const phoneRegex = /^\+?\d{10,15}$/;
       if (!phoneRegex.test(formPhone.replace(/\s/g, ''))) {
@@ -95,7 +114,21 @@ export default function AdminUsers() {
       }
     }
 
-    createMutation.mutate({ name: formName, email: formEmail, phone: formPhone, role: formRole, status: formStatus, reason: formReason });
+    if (formRole === 'provider' && !formHospitalId) {
+      toast.error(language === 'en' ? 'Please select a hospital for provider' : 'Hitamo ibitaro kuri provider');
+      return;
+    }
+
+    createMutation.mutate({ 
+      name: formName, 
+      email: formEmail, 
+      phone: formPhone, 
+      password: formPassword, 
+      role: formRole, 
+      status: formStatus, 
+      reason: formReason,
+      hospitalId: formRole === 'provider' ? formHospitalId : undefined
+    });
   };
 
   const openEdit = (user: any) => {
@@ -106,6 +139,7 @@ export default function AdminUsers() {
     setFormRole(user.role);
     setFormStatus(user.status);
     setFormReason(user.reason || '');
+    setFormHospitalId(user.hospitalId || undefined);
     setEditOpen(true);
   };
 
@@ -131,9 +165,22 @@ export default function AdminUsers() {
       }
     }
 
+    if (formRole === 'provider' && !formHospitalId) {
+      toast.error(language === 'en' ? 'Please select a hospital for provider' : 'Hitamo ibitaro kuri provider');
+      return;
+    }
+
     updateMutation.mutate({ 
       id: selectedUser.id, 
-      data: { name: formName, email: formEmail, phone: formPhone, role: formRole, status: formStatus, reason: formReason } 
+      data: { 
+        name: formName, 
+        email: formEmail, 
+        phone: formPhone, 
+        role: formRole, 
+        status: formStatus, 
+        reason: formReason,
+        hospitalId: formRole === 'provider' ? formHospitalId : undefined
+      } 
     });
   };
 
@@ -171,15 +218,22 @@ export default function AdminUsers() {
                   <Label htmlFor="phone">{language === 'en' ? 'Phone' : 'Nimero ya Terefone'}</Label>
                   <Input id="phone" value={formPhone} onChange={(e) => setFormPhone(e.target.value)} />
                 </div>
+                <div className="space-y-2">
+                  <Label htmlFor="password">{language === 'en' ? 'Password' : 'Ijambo ry\'ibanga'}</Label>
+                  <Input id="password" type="password" value={formPassword} onChange={(e) => setFormPassword(e.target.value)} required />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="confirmPassword">{language === 'en' ? 'Confirm Password' : 'Emeza Ijambo ry\'ibanga'}</Label>
+                  <Input id="confirmPassword" type="password" value={formConfirmPassword} onChange={(e) => setFormConfirmPassword(e.target.value)} required />
+                </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>{language === 'en' ? 'Role' : 'Uruhare'}</Label>
-                    <Select value={formRole} onValueChange={(v: any) => setFormRole(v)}>
+                    <Select value={formRole} onValueChange={(v: any) => { setFormRole(v); if (v !== 'provider') setFormHospitalId(undefined); }}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="admin">Admin</SelectItem>
                         <SelectItem value="provider">Provider</SelectItem>
-                        <SelectItem value="patient">Patient</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -195,6 +249,19 @@ export default function AdminUsers() {
                     </Select>
                   </div>
                 </div>
+                {formRole === 'provider' && (
+                  <div className="space-y-2">
+                    <Label>{language === 'en' ? 'Hospital' : 'Ibitaro'}</Label>
+                    <Select value={formHospitalId?.toString()} onValueChange={(v: any) => setFormHospitalId(parseInt(v))}>
+                      <SelectTrigger><SelectValue placeholder={language === 'en' ? 'Select hospital' : 'Hitamo ibitaro'} /></SelectTrigger>
+                      <SelectContent>
+                        {hospitals.map((h: any) => (
+                          <SelectItem key={h.id} value={h.id.toString()}>{h.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
                 <div className="space-y-2">
                   <Label htmlFor="reason">{language === 'en' ? 'Reason for Access' : 'Impamvu yo Gusaba'}</Label>
                   <Input id="reason" value={formReason} onChange={(e) => setFormReason(e.target.value)} />
@@ -305,7 +372,7 @@ export default function AdminUsers() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>{language === 'en' ? 'Role' : 'Uruhare'}</Label>
-                <Select value={formRole} onValueChange={(v: any) => setFormRole(v)}>
+                <Select value={formRole} onValueChange={(v: any) => { setFormRole(v); if (v !== 'provider') setFormHospitalId(undefined); }}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="admin">Admin</SelectItem>
@@ -326,6 +393,19 @@ export default function AdminUsers() {
                   </Select>
                 </div>
               </div>
+              {formRole === 'provider' && (
+                <div className="space-y-2">
+                  <Label>{language === 'en' ? 'Hospital' : 'Ibitaro'}</Label>
+                  <Select value={formHospitalId?.toString()} onValueChange={(v: any) => setFormHospitalId(parseInt(v))}>
+                    <SelectTrigger><SelectValue placeholder={language === 'en' ? 'Select hospital' : 'Hitamo ibitaro'} /></SelectTrigger>
+                    <SelectContent>
+                      {hospitals.map((h: any) => (
+                        <SelectItem key={h.id} value={h.id.toString()}>{h.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
               <div className="space-y-2">
                 <Label htmlFor="edit-reason">{language === 'en' ? 'Reason for Access' : 'Impamvu yo Gusaba'}</Label>
                 <Input id="edit-reason" value={formReason} onChange={(e) => setFormReason(e.target.value)} />

@@ -165,4 +165,69 @@ export class EmailService {
       this.logger.error('Failed to send access request confirmation email', error);
     }
   }
+
+  async sendUserCredentials(email: string, name: string, password: string, role: string) {
+    if (!this.brevoApiKey) {
+      this.logger.error('BREVO_API_KEY is not configured');
+      return; // Non-critical, just log it
+    }
+
+    const url = 'https://api.brevo.com/v3/smtp/email';
+    
+    const body = {
+      sender: {
+        name: this.senderName,
+        email: this.senderEmail,
+      },
+      to: [
+        {
+          email: email,
+          name: name,
+        },
+      ],
+      subject: 'Welcome to mHealth Reminder Rwanda - Your Login Credentials',
+      htmlContent: `
+        <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+          <h2 style="color: #2c3e50;">Welcome ${name}!</h2>
+          <p>Your account has been successfully created on the <strong>mHealth Reminder Rwanda</strong> system.</p>
+          <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0;">
+            <h3 style="color: #2c3e50; margin-top: 0;">Your Login Credentials:</h3>
+            <p style="margin: 5px 0;"><strong>Email:</strong> ${email}</p>
+            <p style="margin: 5px 0;"><strong>Password:</strong> ${password}</p>
+            <p style="margin: 5px 0;"><strong>Role:</strong> ${role.charAt(0).toUpperCase() + role.slice(1)}</p>
+          </div>
+          <p style="margin-top: 20px;">
+            <a href="${process.env.FRONTEND_URL}/login" style="background-color: #27ae60; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Login to Your Account</a>
+          </p>
+          <p style="margin-top: 30px; color: #e74c3c;">
+            <strong>Important:</strong> For security reasons, please change your password after your first login.
+          </p>
+          <p style="margin-top: 20px;">If you have any questions, please contact our support team.</p>
+          <p>Best regards,<br>The mHealth Reminder Team</p>
+        </div>
+      `,
+      textContent: `Welcome ${name}!\n\nYour account has been created on mHealth Reminder Rwanda.\n\nLogin Credentials:\nEmail: ${email}\nPassword: ${password}\nRole: ${role.charAt(0).toUpperCase() + role.slice(1)}\n\nLogin here: ${process.env.FRONTEND_URL}/login\n\nIMPORTANT: Please change your password after your first login.\n\nBest regards,\nThe mHealth Reminder Team`,
+    };
+
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          'api-key': this.brevoApiKey,
+        },
+        body: JSON.stringify(body),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        this.logger.error('Brevo API error', errorData);
+      } else {
+        this.logger.log(`User credentials email sent to ${email} via Brevo`);
+      }
+    } catch (error) {
+      this.logger.error('Failed to send user credentials email', error);
+    }
+  }
 }
