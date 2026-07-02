@@ -16,7 +16,7 @@ export class UserService {
     const { password, hospitalId, ...rest } = createUserDto;
     const hashedPassword = await bcrypt.hash(password, 10);
     
-    return this.prisma.user.create({
+    const user = await this.prisma.user.create({
       data: {
         ...rest,
         hospital: typeof hospitalId === 'number' ? { connect: { id: hospitalId } } : undefined,
@@ -24,6 +24,13 @@ export class UserService {
         status: rest.status || 'pending', // Default to pending if not specified (for access requests)
       },
     });
+
+    // If status is pending (access request), send confirmation email
+    if (user.status === 'pending') {
+      await this.emailService.sendAccessRequestConfirmation(user.email, user.name);
+    }
+
+    return user;
   }
 
   async findAll() {

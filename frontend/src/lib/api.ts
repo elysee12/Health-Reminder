@@ -10,8 +10,14 @@ export async function fetchFromApi(endpoint: string, options: RequestInit = {}) 
   });
 
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || 'Something went wrong');
+    let errorMessage = 'Something went wrong';
+    try {
+      const error = await response.json();
+      errorMessage = error.message || error.error || JSON.stringify(error);
+    } catch {
+      errorMessage = await response.text() || errorMessage;
+    }
+    throw new Error(errorMessage);
   }
 
   return response.json();

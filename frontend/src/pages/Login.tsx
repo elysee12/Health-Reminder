@@ -93,7 +93,6 @@ const PrimaryBtn = ({
                disabled:opacity-60 disabled:cursor-not-allowed"
     style={{
       background: 'linear-gradient(135deg, hsl(168 60% 32%), hsl(168 65% 44%))',
-      boxShadow: '0 4px 18px hsl(168 60% 35% / 0.40)',
     }}>
     {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Icon className="h-4 w-4" />}
     {label}
@@ -169,24 +168,56 @@ export default function Login() {
       toast.error(language === 'en' ? 'Please fill all fields' : 'Uzuza ibisabwa byose'); return;
     }
     if (resetPassword !== resetConfirm) {
-      toast.error(language === 'en' ? 'Passwords do not match' : "Amagambo y'ibanga ntabwo ahura"); return;
+      toast.error(language === 'en' ? 'Passwords do not match' : 'Amagambo y\'ibanga ntabwo ahura'); return;
     }
     try {
       await api.auth.confirmPasswordReset({ email: resetEmail, otp: resetOtp, newPassword: resetPassword });
-      toast.success(language === 'en' ? 'Password reset successfully.' : "Ijambo ry'ibanga ryahinduwe.");
+      toast.success(language === 'en' ? 'Password reset successfully.' : 'Ijambo ry\'ibanga ryahinduwe.');
       setView('login');
     } catch (err: any) { toast.error(err.message || 'Unable to reset password'); }
   };
 
   const handleRequest = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!reqName || !reqEmail || !reqPhone || !reqReason || !reqPassword || !reqConfirm
-      || (reqRole === 'provider' && !reqHospital)) {
-      toast.error(language === 'en' ? 'Please fill all required fields' : 'Uzuza imyanya yose ikenewe'); return;
+
+    // Validation
+    if (!reqName.trim()) {
+      toast.error(language === 'en' ? 'Please enter your full name' : 'Injiza amazina yawe yose');
+      return;
     }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!reqEmail.trim() || !emailRegex.test(reqEmail)) {
+      toast.error(language === 'en' ? 'Please enter a valid email address' : 'Injiza imeyili yo kweza');
+      return;
+    }
+
+    const phoneRegex = /^\+?\d{10,15}$/;
+    if (!reqPhone.trim() || !phoneRegex.test(reqPhone.replace(/\s/g, ''))) {
+      toast.error(language === 'en' ? 'Please enter a valid phone number' : 'Injiza telefoni yo kweza');
+      return;
+    }
+
+    if (reqRole === 'provider' && !reqHospital) {
+      toast.error(language === 'en' ? 'Please select a hospital' : 'Hitamo hospitali');
+      return;
+    }
+
+    if (!reqReason.trim()) {
+      toast.error(language === 'en' ? 'Please enter a reason for access' : 'Injiza icyo ushaka gukoresha');
+      return;
+    }
+
+    if (reqPassword.length < 6) {
+      toast.error(language === 'en' ? 'Password must be at least 6 characters long' : 'Ijambo ry\'ibanga rigomba kuba ubusa bwa 6');
+      return;
+    }
+
     if (reqPassword !== reqConfirm) {
-      toast.error(language === 'en' ? 'Passwords do not match' : "Amagambo y'ibanga ntabwo ahura"); return;
+      toast.error(language === 'en' ? 'Passwords do not match' : 'Amagambo y\'ibanga ntabwo ahura');
+      return;
     }
+
     try {
       await api.accessRequests.create({
         name: reqName, email: reqEmail, phone: reqPhone, role: reqRole,
@@ -322,7 +353,7 @@ export default function Login() {
                       {language === 'en' ? 'Welcome back' : 'Murakaza neza'}
                     </h2>
                     <p className="text-slate-500 text-sm mt-0.5">
-                      {language === 'en' ? 'Sign in to your dashboard' : "Yinjira mu kibaho cyawe"}
+                      {language === 'en' ? 'Sign in to your dashboard' : 'Yinjira mu kibaho cyawe'}
                     </p>
                   </div>
                 </div>
@@ -382,7 +413,7 @@ export default function Login() {
                   </div>
                   <div>
                     <h2 className="font-heading text-2xl font-extrabold text-slate-900 leading-tight">
-                      {language === 'en' ? 'Forgot password?' : "Wibagiwe ijambo ry'ibanga?"}
+                      {language === 'en' ? 'Forgot password?' : 'Wibagiwe ijambo ry\'ibanga?'}
                     </h2>
                     <p className="text-slate-500 text-sm mt-0.5">
                       {language === 'en' ? "We'll send a one-time code to your email." : "Tuzakoherereza kode imeyili yawe."}
@@ -414,7 +445,7 @@ export default function Login() {
                   </div>
                   <div>
                     <h2 className="font-heading text-2xl font-extrabold text-slate-900 leading-tight">
-                      {language === 'en' ? 'Reset password' : "Hindura ijambo ry'ibanga"}
+                      {language === 'en' ? 'Reset password' : 'Hindura ijambo ry\'ibanga'}
                     </h2>
                     <p className="text-slate-500 text-sm mt-0.5">
                       {language === 'en' ? `Code sent to ${resetEmail}` : `Kode yoherejwe kuri ${resetEmail}`}
@@ -574,7 +605,7 @@ export default function Login() {
                   <div className="rounded-2xl border border-slate-100 bg-slate-50/60 p-4 space-y-4">
                     <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400 flex items-center gap-2">
                       <Lock className="h-3.5 w-3.5" />
-                      {language === 'en' ? 'Set Password' : "Shyiraho Ijambo ry'Ibanga"}
+                      {language === 'en' ? 'Set Password' : 'Shyiraho Ijambo ry\'Ibanga'}
                     </p>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>

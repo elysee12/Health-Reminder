@@ -110,4 +110,59 @@ export class EmailService {
       this.logger.error('Failed to send account activation email', error);
     }
   }
+
+  async sendAccessRequestConfirmation(email: string, name: string) {
+    if (!this.brevoApiKey) {
+      this.logger.error('BREVO_API_KEY is not configured');
+      return; // Non-critical, just log it
+    }
+
+    const url = 'https://api.brevo.com/v3/smtp/email';
+    
+    const body = {
+      sender: {
+        name: this.senderName,
+        email: this.senderEmail,
+      },
+      to: [
+        {
+          email: email,
+          name: name,
+        },
+      ],
+      subject: 'Access Request Received - mHealth Reminder Rwanda',
+      htmlContent: `
+        <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+          <h2 style="color: #2c3e50;">Hello ${name},</h2>
+          <p>Thank you for your interest in the <strong>mHealth Reminder Rwanda</strong> system!</p>
+          <p>We have received your access request, and our team will review it shortly.</p>
+          <p>You will receive a confirmation email once your account has been approved.</p>
+          <p style="margin-top: 30px;">If you have any questions, please contact our support team.</p>
+          <p>Best regards,<br>The mHealth Reminder Team</p>
+        </div>
+      `,
+      textContent: `Hello ${name},\n\nThank you for your interest in mHealth Reminder Rwanda! We've received your access request and will review it shortly.\n\nYou'll get a confirmation email once approved.\n\nBest regards,\nThe mHealth Reminder Team`,
+    };
+
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          'api-key': this.brevoApiKey,
+        },
+        body: JSON.stringify(body),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        this.logger.error('Brevo API error', errorData);
+      } else {
+        this.logger.log(`Access request confirmation email sent to ${email} via Brevo`);
+      }
+    } catch (error) {
+      this.logger.error('Failed to send access request confirmation email', error);
+    }
+  }
 }

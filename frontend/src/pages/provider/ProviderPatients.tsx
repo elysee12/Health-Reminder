@@ -1,4 +1,4 @@
-import { useState, Dispatch, SetStateAction } from 'react';
+import { useState, Dispatch, SetStateAction, useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/lib/auth-context';
 import { api } from '@/lib/api';
@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { LayoutDashboard, Users, Pill, Bell, BarChart3, MessageSquare, Search, Plus, Pencil, Trash2, Eye, EyeOff, Target, Calendar, UserCheck, AlertTriangle } from 'lucide-react';
+import rwandaLocations from '@/assets/rwanda_locations.json';
 
 type FormFieldsProps = {
   language: string;
@@ -26,8 +27,6 @@ type FormFieldsProps = {
   setFormAge: Dispatch<SetStateAction<string>>;
   formGender: 'Male' | 'Female';
   setFormGender: Dispatch<SetStateAction<'Male' | 'Female'>>;
-  formAddress: string;
-  setFormAddress: Dispatch<SetStateAction<string>>;
   formCommMethod: 'web' | 'ussd' | 'both';
   setFormCommMethod: Dispatch<SetStateAction<'web' | 'ussd' | 'both'>>;
   formPassword: string;
@@ -42,9 +41,30 @@ type FormFieldsProps = {
   setShowPassword: Dispatch<SetStateAction<boolean>>;
   showPin: boolean;
   setShowPin: Dispatch<SetStateAction<boolean>>;
+  selectedProvince: string;
+  setSelectedProvince: Dispatch<SetStateAction<string>>;
+  selectedDistrict: string;
+  setSelectedDistrict: Dispatch<SetStateAction<string>>;
+  selectedSector: string;
+  setSelectedSector: Dispatch<SetStateAction<string>>;
+  selectedCell: string;
+  setSelectedCell: Dispatch<SetStateAction<string>>;
+  selectedVillage: string;
+  setSelectedVillage: Dispatch<SetStateAction<string>>;
 };
 
-const FormFields = ({ language, t, formName, setFormName, formPhone, setFormPhone, formEmail, setFormEmail, formAge, setFormAge, formGender, setFormGender, formAddress, setFormAddress, formCommMethod, setFormCommMethod, formPassword, setFormPassword, formConfirmPassword, setFormConfirmPassword, formPin, setFormPin, formConfirmPin, setFormConfirmPin, showPassword, setShowPassword, showPin, setShowPin }: FormFieldsProps) => (
+const FormFields = ({ language, t, formName, setFormName, formPhone, setFormPhone, formEmail, setFormEmail, formAge, setFormAge, formGender, setFormGender, formCommMethod, setFormCommMethod, formPassword, setFormPassword, formConfirmPassword, setFormConfirmPassword, formPin, setFormPin, formConfirmPin, setFormConfirmPin, showPassword, setShowPassword, showPin, setShowPin, selectedProvince, setSelectedProvince, selectedDistrict, setSelectedDistrict, selectedSector, setSelectedSector, selectedCell, setSelectedCell, selectedVillage, setSelectedVillage }: FormFieldsProps) => {
+  const provinces = rwandaLocations.items;
+  const selectedProvinceData = provinces.find(p => p.name === selectedProvince);
+  const districts = selectedProvinceData?.districts || [];
+  const selectedDistrictData = districts.find(d => d.name === selectedDistrict);
+  const sectors = selectedDistrictData?.sectors || [];
+  const selectedSectorData = sectors.find(s => s.name === selectedSector);
+  const cells = selectedSectorData?.cells || [];
+  const selectedCellData = cells.find(c => c.name === selectedCell);
+  const villages = selectedCellData?.villages || [];
+
+  return (
   <div className="grid grid-cols-2 gap-4">
     <div className="col-span-2">
       <Label>{language === 'en' ? 'Communication Method' : 'Uburyo bwo Gutumanaho'}</Label>
@@ -86,10 +106,69 @@ const FormFields = ({ language, t, formName, setFormName, formPhone, setFormPhon
       </Select>
     </div>
     <div className="col-span-2">
-      <Label>{language === 'en' ? 'Address' : 'Aderesi'}</Label>
-      <Input value={formAddress} onChange={(e) => setFormAddress(e.target.value)} placeholder="District, Sector" className="mt-1.5" />
+      <Label>{language === 'en' ? 'Province' : 'Intara'}</Label>
+      <Select value={selectedProvince} onValueChange={(v) => { setSelectedProvince(v); setSelectedDistrict(''); setSelectedSector(''); setSelectedCell(''); setSelectedVillage(''); }}>
+        <SelectTrigger className="mt-1.5"><SelectValue placeholder={language === 'en' ? 'Select Province' : 'Hitamo Intara'} /></SelectTrigger>
+        <SelectContent>
+          {provinces.map(province => (
+            <SelectItem key={province.name} value={province.name}>{province.name}</SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
     </div>
-    {formCommMethod === 'ussd' ? (
+    {selectedProvince && (
+      <div className="col-span-2">
+        <Label>{language === 'en' ? 'District' : 'Akarere'}</Label>
+        <Select value={selectedDistrict} onValueChange={(v) => { setSelectedDistrict(v); setSelectedSector(''); setSelectedCell(''); setSelectedVillage(''); }}>
+          <SelectTrigger className="mt-1.5"><SelectValue placeholder={language === 'en' ? 'Select District' : 'Hitamo Akarere'} /></SelectTrigger>
+          <SelectContent>
+            {districts.map(district => (
+              <SelectItem key={district.name} value={district.name}>{district.name}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+    )}
+    {selectedDistrict && (
+      <div className="col-span-2">
+        <Label>{language === 'en' ? 'Sector' : 'Umurenge'}</Label>
+        <Select value={selectedSector} onValueChange={(v) => { setSelectedSector(v); setSelectedCell(''); setSelectedVillage(''); }}>
+          <SelectTrigger className="mt-1.5"><SelectValue placeholder={language === 'en' ? 'Select Sector' : 'Hitamo Umurenge'} /></SelectTrigger>
+          <SelectContent>
+            {sectors.map(sector => (
+              <SelectItem key={sector.name} value={sector.name}>{sector.name}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+    )}
+    {selectedSector && (
+      <div className="col-span-2">
+        <Label>{language === 'en' ? 'Cell' : 'Akagari'}</Label>
+        <Select value={selectedCell} onValueChange={(v) => { setSelectedCell(v); setSelectedVillage(''); }}>
+          <SelectTrigger className="mt-1.5"><SelectValue placeholder={language === 'en' ? 'Select Cell' : 'Hitamo Akagari'} /></SelectTrigger>
+          <SelectContent>
+            {cells.map(cell => (
+              <SelectItem key={cell.name} value={cell.name}>{cell.name}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+    )}
+    {selectedCell && (
+      <div className="col-span-2">
+        <Label>{language === 'en' ? 'Village' : 'Umudugudu'}</Label>
+        <Select value={selectedVillage} onValueChange={setSelectedVillage}>
+          <SelectTrigger className="mt-1.5"><SelectValue placeholder={language === 'en' ? 'Select Village' : 'Hitamo Umudugudu'} /></SelectTrigger>
+          <SelectContent>
+            {villages.map(village => (
+              <SelectItem key={village} value={village}>{village}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+    )}
+    {formCommMethod === 'ussd' || formCommMethod === 'both' ? (
       <>
         <div>
           <Label>{language === 'en' ? 'PIN' : 'PIN'}</Label>
@@ -110,7 +189,8 @@ const FormFields = ({ language, t, formName, setFormName, formPhone, setFormPhon
           </div>
         </div>
       </>
-    ) : (
+    ) : null}
+    {formCommMethod === 'web' || formCommMethod === 'both' ? (
       <>
         <div>
           <Label>{language === 'en' ? 'Password' : 'Ijambo ry\'ibanga'}</Label>
@@ -131,9 +211,9 @@ const FormFields = ({ language, t, formName, setFormName, formPhone, setFormPhon
           </div>
         </div>
       </>
-    )}
+    ) : null}
   </div>
-);
+)};
 
 export default function ProviderPatients() {
   const { t, language, user } = useAuth();
@@ -158,30 +238,78 @@ export default function ProviderPatients() {
   const [formConfirmPin, setFormConfirmPin] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showPin, setShowPin] = useState(false);
+  
+  const [selectedProvince, setSelectedProvince] = useState('');
+  const [selectedDistrict, setSelectedDistrict] = useState('');
+  const [selectedSector, setSelectedSector] = useState('');
+  const [selectedCell, setSelectedCell] = useState('');
+  const [selectedVillage, setSelectedVillage] = useState('');
+
+  // Combine address parts when any changes
+  useEffect(() => {
+    const parts = [selectedProvince, selectedDistrict, selectedSector, selectedCell, selectedVillage].filter(Boolean);
+    setFormAddress(parts.join(', '));
+  }, [selectedProvince, selectedDistrict, selectedSector, selectedCell, selectedVillage]);
 
   const filtered = pats.filter((p) => p.name.toLowerCase().includes(search.toLowerCase()) || p.phone.includes(search));
 
-  const resetForm = () => { setFormName(''); setFormPhone(''); setFormEmail(''); setFormAge(''); setFormGender('Male'); setFormAddress(''); setFormCommMethod('both'); setFormPassword(''); setFormConfirmPassword(''); setFormPin(''); setFormConfirmPin(''); setShowPassword(false); setShowPin(false); };
+  const resetForm = () => { setFormName(''); setFormPhone(''); setFormEmail(''); setFormAge(''); setFormGender('Male'); setFormAddress(''); setFormCommMethod('both'); setFormPassword(''); setFormConfirmPassword(''); setFormPin(''); setFormConfirmPin(''); setShowPassword(false); setShowPin(false); setSelectedProvince(''); setSelectedDistrict(''); setSelectedSector(''); setSelectedCell(''); setSelectedVillage(''); };
 
   const handleAdd = async () => {
-    if (!formName || !formPhone) { toast.error(language === 'en' ? 'Name and phone are required' : 'Izina na telefoni birakenewe'); return; }
-    if (formCommMethod === 'ussd') {
-      if (!formPin || formPin !== formConfirmPin) { toast.error(language === 'en' ? 'PINs must match' : 'PIN zigomba guhura'); return; }
-    } else {
-      if (!formPassword || formPassword !== formConfirmPassword) { toast.error(language === 'en' ? 'Passwords must match' : 'Ijambo ry\'ibanga rigomba guhura'); return; }
+    if (!formName.trim()) { toast.error(language === 'en' ? 'Please enter patient name' : 'Injiza izina ry\'umurwayi'); return; }
+    
+    const phoneRegex = /^\+?\d{10,15}$/;
+    if (!formPhone.trim() || !phoneRegex.test(formPhone.replace(/\s/g, ''))) {
+      toast.error(language === 'en' ? 'Please enter a valid phone number (10-15 digits)' : 'Injiza telefoni yo kweza (ibibare 10-15)');
+      return;
     }
+
+    if (formEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formEmail)) {
+      toast.error(language === 'en' ? 'Please enter a valid email address' : 'Injiza imeyili yo kweza');
+      return;
+    }
+    
+    if (!formAge || Number(formAge) <= 0 || Number(formAge) > 150) {
+      toast.error(language === 'en' ? 'Please enter a valid age (1-150)' : 'Injiza imyaka yo kweza (1-150)');
+      return;
+    }
+
+    if (!formAddress) { toast.error(language === 'en' ? 'Please select a complete address' : 'Hitamo aderesi yuzuye'); return; }
+
+    if (formCommMethod === 'ussd' || formCommMethod === 'both') {
+      if (!formPin || formPin.length < 4) {
+        toast.error(language === 'en' ? 'PIN must be at least 4 digits' : 'PIN rigomba kuba ubusa bwa 4');
+        return;
+      }
+      if (formPin !== formConfirmPin) {
+        toast.error(language === 'en' ? 'PINs must match' : 'PIN zigomba guhura');
+        return;
+      }
+    }
+
+    if (formCommMethod === 'web' || formCommMethod === 'both') {
+      if (!formPassword || formPassword.length < 6) {
+        toast.error(language === 'en' ? 'Password must be at least 6 characters' : 'Ijambo ry\'ibanga rigomba kuba ubusa bwa 6');
+        return;
+      }
+      if (formPassword !== formConfirmPassword) {
+        toast.error(language === 'en' ? 'Passwords must match' : 'Ijambo ry\'ibanga rigomba guhura');
+        return;
+      }
+    }
+
     try {
       await api.patients.create({
         name: formName,
         phone: formPhone,
         email: formEmail || undefined,
-        age: Number(formAge) || 0,
+        age: Number(formAge),
         gender: formGender,
         address: formAddress,
         registeredDate: new Date().toISOString(),
         communicationMethod: formCommMethod,
-        password: formCommMethod !== 'ussd' ? formPassword : undefined,
-        pin: formCommMethod === 'ussd' ? formPin : undefined,
+        password: (formCommMethod === 'web' || formCommMethod === 'both') ? formPassword : undefined,
+        pin: (formCommMethod === 'ussd' || formCommMethod === 'both') ? formPin : undefined,
         hospitalId: user?.hospitalId,
         registeredByUserId: user?.id,
         registeredByHospitalId: user?.hospitalId,
@@ -189,8 +317,8 @@ export default function ProviderPatients() {
       await queryClient.invalidateQueries(['patients']);
       resetForm(); setAddOpen(false);
       toast.success(language === 'en' ? 'Patient registered successfully' : 'Umurwayi yanditswe neza');
-    } catch (error) {
-      toast.error(language === 'en' ? 'Unable to register patient' : 'Ntabashije kwandika umurwayi');
+    } catch (error: any) {
+      toast.error(error.message || (language === 'en' ? 'Unable to register patient' : 'Ntabashije kwandika umurwayi'));
     }
   };
 
@@ -202,12 +330,31 @@ export default function ProviderPatients() {
 
   const handleEdit = async () => {
     if (!selected) return;
+
+    if (!formName.trim()) { toast.error(language === 'en' ? 'Please enter patient name' : 'Injiza izina ry\'umurwayi'); return; }
+    
+    const phoneRegex = /^\+?\d{10,15}$/;
+    if (!formPhone.trim() || !phoneRegex.test(formPhone.replace(/\s/g, ''))) {
+      toast.error(language === 'en' ? 'Please enter a valid phone number (10-15 digits)' : 'Injiza telefoni yo kweza (ibibare 10-15)');
+      return;
+    }
+
+    if (formEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formEmail)) {
+      toast.error(language === 'en' ? 'Please enter a valid email address' : 'Injiza imeyili yo kweza');
+      return;
+    }
+    
+    if (!formAge || Number(formAge) <= 0 || Number(formAge) > 150) {
+      toast.error(language === 'en' ? 'Please enter a valid age (1-150)' : 'Injiza imyaka yo kweza (1-150)');
+      return;
+    }
+
     try {
       await api.patients.update(selected.id, {
         name: formName,
         phone: formPhone,
         email: formEmail || undefined,
-        age: Number(formAge) || 0,
+        age: Number(formAge),
         gender: formGender,
         address: formAddress,
         communicationMethod: formCommMethod,
@@ -215,8 +362,8 @@ export default function ProviderPatients() {
       await queryClient.invalidateQueries(['patients']);
       resetForm(); setEditOpen(false); setSelected(null);
       toast.success(language === 'en' ? 'Patient updated' : 'Umurwayi yahinduwe');
-    } catch (error) {
-      toast.error(language === 'en' ? 'Unable to update patient' : 'Ntabashije guhindura umurwayi');
+    } catch (error: any) {
+      toast.error(error.message || (language === 'en' ? 'Unable to update patient' : 'Ntabashije guhindura umurwayi'));
     }
   };
 
@@ -252,7 +399,6 @@ export default function ProviderPatients() {
                   formEmail={formEmail} setFormEmail={setFormEmail}
                   formAge={formAge} setFormAge={setFormAge}
                   formGender={formGender} setFormGender={setFormGender}
-                  formAddress={formAddress} setFormAddress={setFormAddress}
                   formCommMethod={formCommMethod} setFormCommMethod={setFormCommMethod}
                   formPassword={formPassword} setFormPassword={setFormPassword}
                   formConfirmPassword={formConfirmPassword} setFormConfirmPassword={setFormConfirmPassword}
@@ -260,6 +406,11 @@ export default function ProviderPatients() {
                   formConfirmPin={formConfirmPin} setFormConfirmPin={setFormConfirmPin}
                   showPassword={showPassword} setShowPassword={setShowPassword}
                   showPin={showPin} setShowPin={setShowPin}
+                  selectedProvince={selectedProvince} setSelectedProvince={setSelectedProvince}
+                  selectedDistrict={selectedDistrict} setSelectedDistrict={setSelectedDistrict}
+                  selectedSector={selectedSector} setSelectedSector={setSelectedSector}
+                  selectedCell={selectedCell} setSelectedCell={setSelectedCell}
+                  selectedVillage={selectedVillage} setSelectedVillage={setSelectedVillage}
                 />
                 <DialogFooter className="mt-4">
                   <DialogClose asChild><Button type="button" variant="outline">{language === 'en' ? 'Cancel' : 'Hagarika'}</Button></DialogClose>
@@ -315,7 +466,6 @@ export default function ProviderPatients() {
                   formEmail={formEmail} setFormEmail={setFormEmail}
                   formAge={formAge} setFormAge={setFormAge}
                   formGender={formGender} setFormGender={setFormGender}
-                  formAddress={formAddress} setFormAddress={setFormAddress}
                   formCommMethod={formCommMethod} setFormCommMethod={setFormCommMethod}
                   formPassword={formPassword} setFormPassword={setFormPassword}
                   formConfirmPassword={formConfirmPassword} setFormConfirmPassword={setFormConfirmPassword}
@@ -323,6 +473,11 @@ export default function ProviderPatients() {
                   formConfirmPin={formConfirmPin} setFormConfirmPin={setFormConfirmPin}
                   showPassword={showPassword} setShowPassword={setShowPassword}
                   showPin={showPin} setShowPin={setShowPin}
+                  selectedProvince={selectedProvince} setSelectedProvince={setSelectedProvince}
+                  selectedDistrict={selectedDistrict} setSelectedDistrict={setSelectedDistrict}
+                  selectedSector={selectedSector} setSelectedSector={setSelectedSector}
+                  selectedCell={selectedCell} setSelectedCell={setSelectedCell}
+                  selectedVillage={selectedVillage} setSelectedVillage={setSelectedVillage}
                 />
                 <DialogFooter className="mt-4">
                   <DialogClose asChild><Button type="button" variant="outline">{language === 'en' ? 'Cancel' : 'Hagarika'}</Button></DialogClose>

@@ -32,14 +32,35 @@ export default function ProfileUpdate({ sidebarItems }: ProfileUpdateProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formName || !formEmail) {
-      toast.error(language === 'en' ? 'Name and email are required' : 'Izina na imeyili birakenewe');
+    if (!formName.trim()) {
+      toast.error(language === 'en' ? 'Please enter your full name' : 'Injiza amazina yawe yose');
       return;
     }
 
-    if (formPassword && formPassword !== formConfirmPassword) {
-      toast.error(language === 'en' ? 'Passwords do not match' : "Ijambo ry'ibanga ntabwo rihura");
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!formEmail.trim() || !emailRegex.test(formEmail)) {
+      toast.error(language === 'en' ? 'Please enter a valid email' : 'Injiza imeyili yo kweza');
       return;
+    }
+
+    if (formPhone) {
+      const phoneRegex = /^\+?\d{10,15}$/;
+      if (!phoneRegex.test(formPhone.replace(/\s/g, ''))) {
+        toast.error(language === 'en' ? 'Please enter a valid phone (10-15 digits)' : 'Injiza telefoni yo kweza (ibibare 10-15)');
+        return;
+      }
+    }
+
+    if (formPassword) {
+      if (formPassword.length < 6) {
+        toast.error(language === 'en' ? 'Password must be at least 6 characters' : 'Ijambo ry\'ibanga rigomba kuba ubusa bwa 6');
+        return;
+      }
+
+      if (formPassword !== formConfirmPassword) {
+        toast.error(language === 'en' ? 'Passwords do not match' : "Ijambo ry'ibanga ntabwo rihura");
+        return;
+      }
     }
 
     setIsLoading(true);
@@ -56,7 +77,8 @@ export default function ProfileUpdate({ sidebarItems }: ProfileUpdateProps) {
 
       await api.users.update(Number(user!.id), updateData);
       await queryClient.invalidateQueries({ queryKey: ['user'] });
-      await refreshUser();      toast.success(language === 'en' ? 'Profile updated successfully' : 'Umwirondoro wahinduwe neza');
+      await refreshUser();
+      toast.success(language === 'en' ? 'Profile updated successfully' : 'Umwirondoro wahinduwe neza');
 
       // Navigate back to dashboard
       const dashboardPath = user?.role === 'patient' ? '/patient' : user?.role === 'provider' ? '/provider' : '/admin';

@@ -76,10 +76,25 @@ export default function AdminUsers() {
   };
 
   const handleAdd = () => {
-    if (!formName || !formEmail) {
-      toast.error(language === 'en' ? 'Name and email are required' : 'Izina na imeyili birakenewe');
+    if (!formName.trim()) {
+      toast.error(language === 'en' ? 'Please enter full name' : 'Injiza amazina yose');
       return;
     }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!formEmail.trim() || !emailRegex.test(formEmail)) {
+      toast.error(language === 'en' ? 'Please enter a valid email' : 'Injiza imeyili yo kweza');
+      return;
+    }
+
+    if (formPhone) {
+      const phoneRegex = /^\+?\d{10,15}$/;
+      if (!phoneRegex.test(formPhone.replace(/\s/g, ''))) {
+        toast.error(language === 'en' ? 'Please enter a valid phone (10-15 digits)' : 'Injiza telefoni yo kweza (ibibare 10-15)');
+        return;
+      }
+    }
+
     createMutation.mutate({ name: formName, email: formEmail, phone: formPhone, role: formRole, status: formStatus, reason: formReason });
   };
 
@@ -95,7 +110,27 @@ export default function AdminUsers() {
   };
 
   const handleEdit = () => {
-    if (!selectedUser || !formName || !formEmail) return;
+    if (!selectedUser) return;
+
+    if (!formName.trim()) {
+      toast.error(language === 'en' ? 'Please enter full name' : 'Injiza amazina yose');
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!formEmail.trim() || !emailRegex.test(formEmail)) {
+      toast.error(language === 'en' ? 'Please enter a valid email' : 'Injiza imeyili yo kweza');
+      return;
+    }
+
+    if (formPhone) {
+      const phoneRegex = /^\+?\d{10,15}$/;
+      if (!phoneRegex.test(formPhone.replace(/\s/g, ''))) {
+        toast.error(language === 'en' ? 'Please enter a valid phone (10-15 digits)' : 'Injiza telefoni yo kweza (ibibare 10-15)');
+        return;
+      }
+    }
+
     updateMutation.mutate({ 
       id: selectedUser.id, 
       data: { name: formName, email: formEmail, phone: formPhone, role: formRole, status: formStatus, reason: formReason } 
