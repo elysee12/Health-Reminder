@@ -3,6 +3,7 @@ const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:3000') + '/ap
 export async function fetchFromApi(endpoint: string, options: RequestInit = {}) {
   const response = await fetch(`${API_URL}${endpoint}`, {
     ...options,
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
       ...options.headers,
@@ -26,6 +27,8 @@ export async function fetchFromApi(endpoint: string, options: RequestInit = {}) 
 export const api = {
   auth: {
     login: (data: any) => fetchFromApi('/auth/login', { method: 'POST', body: JSON.stringify(data) }),
+    logout: () => fetchFromApi('/auth/logout', { method: 'POST' }),
+    getProfile: () => fetchFromApi('/auth/me'),
     requestPasswordReset: (data: any) => fetchFromApi('/auth/password-reset/request', { method: 'POST', body: JSON.stringify(data) }),
     confirmPasswordReset: (data: any) => fetchFromApi('/auth/password-reset/confirm', { method: 'POST', body: JSON.stringify(data) }),
   },

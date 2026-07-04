@@ -13,7 +13,7 @@ export default function AppSidebar({ items, onNavItemClick }: AppSidebarProps) {
 
   const go = (path: string) => { navigate(path); onNavItemClick?.(); };
 
-  const handleLogout = () => { logout(); navigate('/'); onNavItemClick?.(); };
+  const handleLogout = async () => { await logout(); navigate('/'); onNavItemClick?.(); };
 
   const handleEditProfile = () => {
     const map: Record<string, string> = { admin: '/admin/profile', provider: '/provider/profile', patient: '/patient/profile' };

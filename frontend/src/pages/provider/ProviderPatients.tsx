@@ -64,11 +64,18 @@ const FormFields = ({ language, t, formName, setFormName, formPhone, setFormPhon
   const selectedCellData = cells.find(c => c.name === selectedCell);
   const villages = selectedCellData?.villages || [];
 
+  const handleCommMethodChange = (v: any) => {
+    setFormCommMethod(v as any);
+    if (v === 'ussd') {
+      setFormEmail('');
+    }
+  };
+
   return (
   <div className="grid grid-cols-2 gap-4">
     <div className="col-span-2">
       <Label>{language === 'en' ? 'Communication Method' : 'Uburyo bwo Gutumanaho'}</Label>
-      <Select value={formCommMethod} onValueChange={(v) => setFormCommMethod(v as any)}>
+      <Select value={formCommMethod} onValueChange={handleCommMethodChange}>
         <SelectTrigger className="mt-1.5"><SelectValue /></SelectTrigger>
         <SelectContent>
           <SelectItem value="web">{language === 'en' ? 'Web/App' : 'Web/App'}</SelectItem>

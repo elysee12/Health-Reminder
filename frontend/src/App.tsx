@@ -1,9 +1,9 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { AuthProvider } from "@/lib/auth-context";
+import { AuthProvider, useAuth } from "@/lib/auth-context";
 import Login from "./pages/Login";
 import Index from "./pages/Index";
 import PatientDashboard from "./pages/patient/PatientDashboard";
@@ -33,8 +33,174 @@ import AdminSettings from "./pages/admin/AdminSettings";
 import AdminProfileUpdate from "./pages/admin/AdminProfileUpdate";
 import ProfileUpdate from "./components/ProfileUpdate";
 import NotFound from "./pages/NotFound";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
+
+function AppRoutes() {
+  const { user, isCheckingAuth } = useAuth();
+
+  if (isCheckingAuth) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  return (
+    <Routes>
+      <Route path="/" element={user ? <Navigate to={getDashboardPath(user.role)} replace /> : <Login />} />
+      <Route path="/home" element={<Navigate to={user ? getDashboardPath(user.role) : "/"} replace />} />
+      
+      {/* Patient Routes */}
+      <Route path="/patient" element={
+        <ProtectedRoute allowedRoles={["patient"]}>
+          <PatientDashboard />
+        </ProtectedRoute>
+      } />
+      <Route path="/patient/prescriptions" element={
+        <ProtectedRoute allowedRoles={["patient"]}>
+          <PatientPrescriptions />
+        </ProtectedRoute>
+      } />
+      <Route path="/patient/reminders" element={
+        <ProtectedRoute allowedRoles={["patient"]}>
+          <PatientReminders />
+        </ProtectedRoute>
+      } />
+      <Route path="/patient/goals" element={
+        <ProtectedRoute allowedRoles={["patient"]}>
+          <PatientGoals />
+        </ProtectedRoute>
+      } />
+      <Route path="/patient/side-effects" element={
+        <ProtectedRoute allowedRoles={["patient"]}>
+          <PatientSideEffects />
+        </ProtectedRoute>
+      } />
+      <Route path="/patient/appointments" element={
+        <ProtectedRoute allowedRoles={["patient"]}>
+          <PatientAppointments />
+        </ProtectedRoute>
+      } />
+      <Route path="/patient/history" element={
+        <ProtectedRoute allowedRoles={["patient"]}>
+          <PatientHistory />
+        </ProtectedRoute>
+      } />
+      <Route path="/patient/profile" element={
+        <ProtectedRoute allowedRoles={["patient"]}>
+          <PatientProfileUpdate />
+        </ProtectedRoute>
+      } />
+
+      {/* Provider Routes */}
+      <Route path="/provider" element={
+        <ProtectedRoute allowedRoles={["provider", "admin"]}>
+          <ProviderDashboard />
+        </ProtectedRoute>
+      } />
+      <Route path="/provider/patients" element={
+        <ProtectedRoute allowedRoles={["provider", "admin"]}>
+          <ProviderPatients />
+        </ProtectedRoute>
+      } />
+      <Route path="/provider/prescriptions" element={
+        <ProtectedRoute allowedRoles={["provider", "admin"]}>
+          <ProviderPrescriptions />
+        </ProtectedRoute>
+      } />
+      <Route path="/provider/reminders" element={
+        <ProtectedRoute allowedRoles={["provider", "admin"]}>
+          <ProviderReminders />
+        </ProtectedRoute>
+      } />
+      <Route path="/provider/analytics" element={
+        <ProtectedRoute allowedRoles={["provider", "admin"]}>
+          <ProviderAnalytics />
+        </ProtectedRoute>
+      } />
+      <Route path="/provider/goals" element={
+        <ProtectedRoute allowedRoles={["provider", "admin"]}>
+          <ProviderGoals />
+        </ProtectedRoute>
+      } />
+      <Route path="/provider/side-effects" element={
+        <ProtectedRoute allowedRoles={["provider", "admin"]}>
+          <ProviderSideEffects />
+        </ProtectedRoute>
+      } />
+      <Route path="/provider/appointments" element={
+        <ProtectedRoute allowedRoles={["provider", "admin"]}>
+          <ProviderAppointments />
+        </ProtectedRoute>
+      } />
+      <Route path="/provider/follow-ups" element={
+        <ProtectedRoute allowedRoles={["provider", "admin"]}>
+          <ProviderFollowUps />
+        </ProtectedRoute>
+      } />
+      <Route path="/provider/sms" element={
+        <ProtectedRoute allowedRoles={["provider", "admin"]}>
+          <ProviderSMS />
+        </ProtectedRoute>
+      } />
+      <Route path="/provider/profile" element={
+        <ProtectedRoute allowedRoles={["provider", "admin"]}>
+          <ProviderProfileUpdate />
+        </ProtectedRoute>
+      } />
+
+      {/* Admin Routes */}
+      <Route path="/admin" element={
+        <ProtectedRoute allowedRoles={["admin"]}>
+          <AdminDashboard />
+        </ProtectedRoute>
+      } />
+      <Route path="/admin/users" element={
+        <ProtectedRoute allowedRoles={["admin"]}>
+          <AdminUsers />
+        </ProtectedRoute>
+      } />
+      <Route path="/admin/hospitals" element={
+        <ProtectedRoute allowedRoles={["admin"]}>
+          <AdminHospitals />
+        </ProtectedRoute>
+      } />
+      <Route path="/admin/interoperability" element={
+        <ProtectedRoute allowedRoles={["admin"]}>
+          <AdminInteroperability />
+        </ProtectedRoute>
+      } />
+      <Route path="/admin/settings" element={
+        <ProtectedRoute allowedRoles={["admin"]}>
+          <AdminSettings />
+        </ProtectedRoute>
+      } />
+      <Route path="/admin/profile" element={
+        <ProtectedRoute allowedRoles={["admin"]}>
+          <AdminProfileUpdate />
+        </ProtectedRoute>
+      } />
+
+      <Route path="*" element={<NotFound />} />
+    </Routes>
+  );
+}
+
+function getDashboardPath(role: string) {
+  switch (role) {
+    case "admin":
+      return "/admin";
+    case "provider":
+      return "/provider";
+    case "patient":
+      return "/patient";
+    default:
+      return "/";
+  }
+}
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -43,36 +209,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Login />} />
-            <Route path="/home" element={<Index />} />
-            <Route path="/patient" element={<PatientDashboard />} />
-            <Route path="/patient/prescriptions" element={<PatientPrescriptions />} />
-            <Route path="/patient/reminders" element={<PatientReminders />} />
-            <Route path="/patient/goals" element={<PatientGoals />} />
-            <Route path="/patient/side-effects" element={<PatientSideEffects />} />
-            <Route path="/patient/appointments" element={<PatientAppointments />} />
-            <Route path="/patient/history" element={<PatientHistory />} />
-            <Route path="/patient/profile" element={<PatientProfileUpdate />} />
-            <Route path="/provider" element={<ProviderDashboard />} />
-            <Route path="/provider/patients" element={<ProviderPatients />} />
-            <Route path="/provider/prescriptions" element={<ProviderPrescriptions />} />
-            <Route path="/provider/reminders" element={<ProviderReminders />} />
-            <Route path="/provider/analytics" element={<ProviderAnalytics />} />
-            <Route path="/provider/goals" element={<ProviderGoals />} />
-            <Route path="/provider/side-effects" element={<ProviderSideEffects />} />
-            <Route path="/provider/appointments" element={<ProviderAppointments />} />
-            <Route path="/provider/follow-ups" element={<ProviderFollowUps />} />
-            <Route path="/provider/sms" element={<ProviderSMS />} />
-            <Route path="/provider/profile" element={<ProviderProfileUpdate />} />
-            <Route path="/admin" element={<AdminDashboard />} />
-            <Route path="/admin/users" element={<AdminUsers />} />
-            <Route path="/admin/hospitals" element={<AdminHospitals />} />
-            <Route path="/admin/interoperability" element={<AdminInteroperability />} />
-            <Route path="/admin/settings" element={<AdminSettings />} />
-            <Route path="/admin/profile" element={<AdminProfileUpdate />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <AppRoutes />
         </BrowserRouter>
       </TooltipProvider>
     </AuthProvider>

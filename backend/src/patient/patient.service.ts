@@ -11,6 +11,11 @@ export class PatientService {
   async create(createPatientDto: CreatePatientDto) {
     const { registeredDate, userId, hospitalId, registeredByUserId, registeredByHospitalId, ...rest } = createPatientDto;
     
+    // Convert empty string email to null
+    if (rest.email === '') {
+      rest.email = undefined;
+    }
+    
     // Hash password if provided
     if (rest.password) {
       rest.password = await bcrypt.hash(rest.password, 10);
@@ -85,6 +90,11 @@ export class PatientService {
 
   async update(id: number, updatePatientDto: UpdatePatientDto) {
     const { registeredDate, userId, hospitalId, registeredByUserId, registeredByHospitalId, ...rest } = updatePatientDto as any;
+    
+    // Convert empty string email to null
+    if (rest.email === '') {
+      rest.email = null;
+    }
     
     // Hash password if provided
     if (rest.password) {
