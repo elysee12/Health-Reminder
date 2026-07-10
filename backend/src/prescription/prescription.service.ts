@@ -47,6 +47,7 @@ export class PrescriptionService {
     const start = new Date(startDate);
     const end = new Date(endDate);
 
+    // Create dates in Rwanda timezone (CAT - UTC+2)
     let currentDate = new Date(start);
     currentDate.setHours(0, 0, 0, 0);
     
@@ -56,8 +57,18 @@ export class PrescriptionService {
     while (currentDate <= endBoundary) {
       for (const time of reminderTimes) {
         const [hours, minutes] = time.split(':').map(Number);
-        const scheduledTime = new Date(currentDate);
-        scheduledTime.setHours(hours, minutes, 0, 0);
+        
+        // Create the scheduled time in Rwanda timezone
+        // Format: YYYY-MM-DD HH:MM:SS (will be interpreted as local Rwanda time)
+        const year = currentDate.getFullYear();
+        const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+        const day = String(currentDate.getDate()).padStart(2, '0');
+        const hoursStr = String(hours).padStart(2, '0');
+        const minutesStr = String(minutes).padStart(2, '0');
+        
+        // Create date string in Rwanda timezone format
+        const dateStr = `${year}-${month}-${day}T${hoursStr}:${minutesStr}:00+02:00`;
+        const scheduledTime = new Date(dateStr);
 
         if (scheduledTime >= start && scheduledTime <= end) {
           remindersToCreate.push({

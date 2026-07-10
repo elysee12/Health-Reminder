@@ -98,35 +98,23 @@ export function useFollowUps(patientId?: number, providerId?: number) {
  * so the three stat pills show live numbers from the database.
  */
 export function usePublicStats() {
-  const reminders = useQuery({
-    queryKey: ['public-reminders-count'],
-    queryFn: () => api.reminders.findAll(),
+  const stats = useQuery({
+    queryKey: ['public-stats'],
+    queryFn: () => api.stats.getPublic(),
     staleTime: 60_000,
     retry: 1,
   });
 
-  const hospitals = useQuery({
-    queryKey: ['public-hospitals-count'],
-    queryFn: () => api.hospitals.findAll(),
-    staleTime: 60_000,
-    retry: 1,
-  });
-
-  const patients = useQuery({
-    queryKey: ['public-patients-count'],
-    queryFn: () => api.patients.findAll(),
-    staleTime: 60_000,
-    retry: 1,
-  });
-
-  const reminderCount = Array.isArray(reminders.data) ? reminders.data.length : 0;
-  const hospitalCount = Array.isArray(hospitals.data) ? hospitals.data.length : 0;
-  const patientCount  = Array.isArray(patients.data)  ? patients.data.length  : 0;
+  const reminderCount = stats.data?.reminderCount || 0;
+  const hospitalCount = stats.data?.hospitalCount || 0;
+  const patientCount = stats.data?.patientCount || 0;
+  const userCount = stats.data?.userCount || 0;
 
   return {
     reminderCount,
     hospitalCount,
     patientCount,
-    isLoading: reminders.isLoading || hospitals.isLoading || patients.isLoading,
+    userCount,
+    isLoading: stats.isLoading,
   };
 }

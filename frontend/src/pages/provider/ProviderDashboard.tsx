@@ -1,11 +1,11 @@
 import { useAuth } from '@/lib/auth-context';
 import DashboardLayout from '@/components/DashboardLayout';
-import { usePatients, usePrescriptions, useReminders, useAdherenceRecords } from '@/hooks/use-api';
+import { usePatients, usePrescriptions, useReminders, useAdherenceRecords, useAppointments, useFollowUps } from '@/hooks/use-api';
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Users, XCircle, AlertTriangle, Clock, TrendingUp, TrendingDown,
-  Activity, ArrowRight, Pill, Bell, BarChart3, ChevronRight,
+  Activity, ArrowRight, Pill, Bell, BarChart3, ChevronRight, Calendar, Stethoscope,
 } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -71,10 +71,10 @@ export default function ProviderDashboard() {
   const { data: prescriptions = [],    isLoading: rxL } = usePrescriptions(user?.id);
   const { data: reminders = [],        isLoading: remL } = useReminders(user?.id);
   const { data: adherenceRecords = [], isLoading: adhL } = useAdherenceRecords(user?.id);
+  const { data: appointments = [],     isLoading: apptL } = useAppointments(undefined, undefined, user?.id);
+  const { data: followUps = [],        isLoading: fuL } = useFollowUps(undefined, user?.id);
 
   const activeRx        = prescriptions.filter((p: any) => p.status === 'active');
-  const missedReminders = reminders.filter((r: any) => r.status === 'missed');
-  const pendingReminders= reminders.filter((r: any) => r.status === 'pending');
   const highRisk        = patients.filter((p: any) => p.adherenceRate < 70);
 
   const weeklyData = useMemo(() => {
@@ -95,7 +95,7 @@ export default function ProviderDashboard() {
     }));
   }, [weeklyData]);
 
-  if (pL || rxL || remL || adhL) return (
+  if (pL || rxL || remL || adhL || apptL || fuL) return (
     <DashboardLayout>
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="flex flex-col items-center gap-3">
@@ -133,8 +133,8 @@ export default function ProviderDashboard() {
         {/* ── Stat cards ──────────────────────────────────────── */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard label={t('patients')}      value={patients.length}         icon={Users}         gradient="bg-gradient-to-r from-blue-500 to-cyan-500"    trend="up"      delay={0}   sub={`${activeRx.length} active Rx`} />
-          <StatCard label={t('pending_today')} value={pendingReminders.length} icon={Clock}         gradient="bg-gradient-to-r from-amber-400 to-orange-500"  trend="neutral" delay={80}  sub={t('awaiting_confirmation')} />
-          <StatCard label={t('missed_today')}  value={missedReminders.length}  icon={XCircle}       gradient="bg-gradient-to-r from-red-400 to-rose-500"      trend="down"    delay={160} sub={t('needs_follow_up')} />
+          <StatCard label="Total Appointments" value={appointments.length}     icon={Calendar}      gradient="bg-gradient-to-r from-amber-400 to-orange-500"  trend="neutral" delay={80}  sub="Scheduled for your patients" />
+          <StatCard label="Total Follow-ups"   value={followUps.length}         icon={Stethoscope}   gradient="bg-gradient-to-r from-red-400 to-rose-500"      trend="down"    delay={160} sub="Active follow-up plans" />
           <StatCard label={t('high_risk')}     value={highRisk.length}         icon={AlertTriangle} gradient="bg-gradient-to-r from-violet-500 to-purple-600" trend="neutral" delay={240} sub={t('below_70_adherence')} />
         </div>
 

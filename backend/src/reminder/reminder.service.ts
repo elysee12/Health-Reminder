@@ -151,6 +151,28 @@ export class ReminderService {
 
   async update(id: number, updateReminderDto: UpdateReminderDto) {
     const { scheduledTime, patientId, prescriptionId, ...rest } = updateReminderDto as any;
+    
+    // If we're marking the reminder as taken, create an adherence record
+    if (rest.status === 'taken') {
+      // First get the reminder to get the patient and prescription info
+      const existingReminder = await this.prisma.reminder.findUnique({
+        where: { id }
+      });
+      
+      if (existingReminder) {
+        await this.prisma.adherenceRecord.create({
+          data: {
+            patientId: existingReminder.patientId,
+            prescriptionId: existingReminder.prescriptionId,
+            medication: existingReminder.medication,
+            scheduledTime: existingReminder.scheduledTime,
+            confirmedTime: new Date(),
+            status: 'taken'
+          }
+        });
+      }
+    }
+    
     return this.prisma.reminder.update({
       where: { id },
       data: {

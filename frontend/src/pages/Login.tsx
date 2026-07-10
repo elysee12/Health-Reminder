@@ -135,7 +135,7 @@ export default function Login() {
   const { login, user, t, language, toggleLanguage, isLoading } = useAuth();
   const navigate = useNavigate();
 
-  const { reminderCount, hospitalCount, patientCount, isLoading: statsLoading } = usePublicStats();
+  const { reminderCount, hospitalCount, patientCount, userCount, isLoading: statsLoading } = usePublicStats();
 
   useEffect(() => {
     if (user) {
@@ -300,8 +300,8 @@ export default function Login() {
         {/* stats */}
         <div className="relative z-10 grid grid-cols-3 gap-3">
           <StatPill
-            value={statsLoading ? '…' : reminderCount >= 1000 ? `${(reminderCount / 1000).toFixed(1)}k+` : `${reminderCount}+`}
-            label={t('reminders_sent')}
+            value={statsLoading ? '…' : userCount >= 1000 ? `${(userCount / 1000).toFixed(1)}k+` : `${userCount}+`}
+            label={language === 'en' ? 'Total Users' : 'Abakoresha'}
             delay={0}
           />
           <StatPill

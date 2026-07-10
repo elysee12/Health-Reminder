@@ -4,7 +4,7 @@ import Footer from './Footer';
 import {
   Menu, Heart, LayoutDashboard, Pill, Bell, Target, MessageSquare,
   Calendar, History, Users, BarChart3, UserCheck, AlertTriangle,
-  Building2, Network, Settings,
+  Building2, Network, Settings, FileText,
 } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Link, useLocation } from 'react-router-dom';
@@ -28,6 +28,7 @@ export default function DashboardLayout({ children, sidebarItems: initialSidebar
       { label: t('dashboard'),        icon: <LayoutDashboard className="h-4 w-4" />, path: '/admin' },
       { label: t('users'),            icon: <Users className="h-4 w-4" />,           path: '/admin/users' },
       { label: t('hospitals'),        icon: <Building2 className="h-4 w-4" />,       path: '/admin/hospitals' },
+      { label: t('reports'),          icon: <FileText className="h-4 w-4" />,        path: '/admin/reports' },
       { label: t('interoperability'), icon: <Network className="h-4 w-4" />,         path: '/admin/interoperability' },
       { label: t('settings'),         icon: <Settings className="h-4 w-4" />,        path: '/admin/settings' },
     ];
@@ -38,6 +39,7 @@ export default function DashboardLayout({ children, sidebarItems: initialSidebar
       { label: t('prescriptions'), icon: <Pill className="h-4 w-4" />,            path: '/provider/prescriptions' },
       { label: t('reminders'),     icon: <Bell className="h-4 w-4" />,            path: '/provider/reminders' },
       { label: t('analytics'),     icon: <BarChart3 className="h-4 w-4" />,       path: '/provider/analytics' },
+      { label: t('reports'),       icon: <FileText className="h-4 w-4" />,        path: '/provider/reports' },
       { label: t('follow_ups'),    icon: <UserCheck className="h-4 w-4" />,       path: '/provider/follow-ups' },
       { label: t('patient_goals'), icon: <Target className="h-4 w-4" />,          path: '/provider/goals' },
       { label: t('side_effects'),  icon: <AlertTriangle className="h-4 w-4" />,   path: '/provider/side-effects' },

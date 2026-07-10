@@ -32,6 +32,17 @@ export const api = {
     requestPasswordReset: (data: any) => fetchFromApi('/auth/password-reset/request', { method: 'POST', body: JSON.stringify(data) }),
     confirmPasswordReset: (data: any) => fetchFromApi('/auth/password-reset/confirm', { method: 'POST', body: JSON.stringify(data) }),
   },
+  stats: {
+    getPublic: () => fetchFromApi('/stats/public'),
+  },
+  reports: {
+    adherence: (params: any) => fetchFromApi(`/reports/adherence?${new URLSearchParams(params).toString()}`),
+    prescriptions: (params: any) => fetchFromApi(`/reports/prescriptions?${new URLSearchParams(params).toString()}`),
+    reminders: (params: any) => fetchFromApi(`/reports/reminders?${new URLSearchParams(params).toString()}`),
+    appointments: (params: any) => fetchFromApi(`/reports/appointments?${new URLSearchParams(params).toString()}`),
+    patients: (params: any) => fetchFromApi(`/reports/patients?${new URLSearchParams(params).toString()}`),
+    summary: (params: any) => fetchFromApi(`/reports/summary?${new URLSearchParams(params).toString()}`),
+  },
   accessRequests: {
     create: (data: any) => fetchFromApi('/user', { method: 'POST', body: JSON.stringify(data) }),
   },
@@ -139,3 +150,82 @@ export const api = {
     remove: (id: number) => fetchFromApi(`/follow-up/${id}`, { method: 'DELETE' }),
   },
 };
+
+// Helper function to generate reports based on type
+export async function generateReport(reportType: string, filters: any = {}) {
+  const reportFunctions: Record<string, (params: any) => Promise<any>> = {
+    adherence: api.reports.adherence,
+    prescriptions: api.reports.prescriptions,
+    reminders: api.reports.reminders,
+    appointments: api.reports.appointments,
+    patients: api.reports.patients,
+    summary: api.reports.summary,
+  };
+
+  const reportFunction = reportFunctions[reportType];
+  if (!reportFunction) {
+    throw new Error(`Unknown report type: ${reportType}`);
+  }
+
+  return await reportFunction(filters);
+}
+
+export async function exportReportToExcel(reportType: string, filters: any = {}) {
+  const params = new URLSearchParams();
+  params.append('reportType', reportType);
+  if (filters.period) params.append('period', filters.period);
+  if (filters.startDate) params.append('startDate', filters.startDate);
+  if (filters.endDate) params.append('endDate', filters.endDate);
+  if (filters.patientId) params.append('patientId', String(filters.patientId));
+  if (filters.hospitalId) params.append('hospitalId', String(filters.hospitalId));
+  if (filters.status) params.append('status', filters.status);
+
+  const response = await fetch(`${API_URL}/reports/export/excel?${params.toString()}`, {
+    credentials: 'include',
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to export report');
+  }
+
+  // Create download link
+  const blob = await response.blob();
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${reportType}-report-${Date.now()}.xlsx`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  window.URL.revokeObjectURL(url);
+}
+
+export async function exportReportToPDF(reportType: string, filters: any = {}) {
+  const params = new URLSearchParams();
+  params.append('reportType', reportType);
+  if (filters.period) params.append('period', filters.period);
+  if (filters.startDate) params.append('startDate', filters.startDate);
+  if (filters.endDate) params.append('endDate', filters.endDate);
+  if (filters.patientId) params.append('patientId', String(filters.patientId));
+  if (filters.hospitalId) params.append('hospitalId', String(filters.hospitalId));
+  if (filters.status) params.append('status', filters.status);
+
+  const response = await fetch(`${API_URL}/reports/export/pdf?${params.toString()}`, {
+    credentials: 'include',
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to export report');
+  }
+
+  // Create download link
+  const blob = await response.blob();
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${reportType}-report-${Date.now()}.pdf`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  window.URL.revokeObjectURL(url);
+}

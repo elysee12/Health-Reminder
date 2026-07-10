@@ -25,12 +25,14 @@ import ProviderAppointments from "./pages/provider/ProviderAppointments";
 import ProviderSMS from "./pages/provider/ProviderSMS";
 import ProviderFollowUps from "./pages/provider/ProviderFollowUps";
 import ProviderProfileUpdate from "./pages/provider/ProviderProfileUpdate";
+import ProviderReports from "./pages/provider/ProviderReports";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminHospitals from "./pages/admin/AdminHospitals";
 import AdminInteroperability from "./pages/admin/AdminInteroperability";
 import AdminSettings from "./pages/admin/AdminSettings";
 import AdminProfileUpdate from "./pages/admin/AdminProfileUpdate";
+import AdminReports from "./pages/admin/AdminReports";
 import ProfileUpdate from "./components/ProfileUpdate";
 import NotFound from "./pages/NotFound";
 import { ProtectedRoute } from "./components/ProtectedRoute";
@@ -151,6 +153,11 @@ function AppRoutes() {
           <ProviderProfileUpdate />
         </ProtectedRoute>
       } />
+      <Route path="/provider/reports" element={
+        <ProtectedRoute allowedRoles={["provider", "admin"]}>
+          <ProviderReports />
+        </ProtectedRoute>
+      } />
 
       {/* Admin Routes */}
       <Route path="/admin" element={
@@ -181,6 +188,11 @@ function AppRoutes() {
       <Route path="/admin/profile" element={
         <ProtectedRoute allowedRoles={["admin"]}>
           <AdminProfileUpdate />
+        </ProtectedRoute>
+      } />
+      <Route path="/admin/reports" element={
+        <ProtectedRoute allowedRoles={["admin"]}>
+          <AdminReports />
         </ProtectedRoute>
       } />
 

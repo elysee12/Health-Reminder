@@ -16,6 +16,8 @@ import { HealthGoalModule } from './health-goal/health-goal.module';
 import { SideEffectModule } from './side-effect/side-effect.module';
 import { AppointmentModule } from './appointment/appointment.module';
 import { FollowUpModule } from './follow-up/follow-up.module';
+import { StatsModule } from './stats/stats.module';
+import { ReportsModule } from './reports/reports.module';
 import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
@@ -36,6 +38,8 @@ import { ScheduleModule } from '@nestjs/schedule';
     SideEffectModule,
     AppointmentModule,
     FollowUpModule,
+    StatsModule,
+    ReportsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

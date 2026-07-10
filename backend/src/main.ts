@@ -5,6 +5,9 @@ import * as cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   try {
+    // Set timezone to Rwanda (CAT - UTC+2)
+    process.env.TZ = 'Africa/Kigali';
+    
     const app = await NestFactory.create(AppModule);
     
     app.setGlobalPrefix('api');
@@ -38,6 +41,7 @@ async function bootstrap() {
 
     await app.listen(process.env.PORT ?? 3000);
     console.log(`Application is running on: ${await app.getUrl()}`);
+    console.log(`Timezone: ${process.env.TZ || 'system default'}`);
   } catch (error) {
     console.error('Bootstrap failed:', error);
     process.exit(1);
