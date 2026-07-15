@@ -127,7 +127,7 @@ model User {
   role           UserRole
   status         UserStatus     @default(pending)
   language       Language       @default(en)
-  hospital       Hospital?      @relation(fields: [hospitalId], references: [id])
+  hospital       Hospital?      @relation(fields: [hospitalId], references: [id], onDelete: SetNull)
   hospitalId     Int?
   patientProfile Patient?
   prescriptions  Prescription[] @relation("ProviderPrescriptions")
@@ -140,7 +140,7 @@ model User {
 
 model Patient {
   id                  Int                 @id @default(autoincrement())
-  user                User?               @relation(fields: [userId], references: [id])
+  user                User?               @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId              Int?                @unique
   name                String
   phone               String              @unique
@@ -155,11 +155,11 @@ model Patient {
   riskLevel           RiskLevel?
   password            String?
   pin                 String?
-  hospital            Hospital?           @relation(fields: [hospitalId], references: [id])
+  hospital            Hospital?           @relation(fields: [hospitalId], references: [id], onDelete: SetNull)
   hospitalId          Int?
-  registeredByUser    User?               @relation("RegisteredByUser", fields: [registeredByUserId], references: [id])
+  registeredByUser    User?               @relation("RegisteredByUser", fields: [registeredByUserId], references: [id], onDelete: SetNull)
   registeredByUserId  Int?
-  registeredByHospital Hospital?          @relation("RegisteredByHospital", fields: [registeredByHospitalId], references: [id])
+  registeredByHospital Hospital?          @relation("RegisteredByHospital", fields: [registeredByHospitalId], references: [id], onDelete: SetNull)
   registeredByHospitalId Int?
   prescriptions       Prescription[]
   reminders           Reminder[]
@@ -190,9 +190,9 @@ model Hospital {
 
 model Prescription {
   id               Int                @id @default(autoincrement())
-  patient          Patient            @relation(fields: [patientId], references: [id])
+  patient          Patient            @relation(fields: [patientId], references: [id], onDelete: Cascade)
   patientId        Int
-  provider         User?              @relation("ProviderPrescriptions", fields: [providerId], references: [id])
+  provider         User?              @relation("ProviderPrescriptions", fields: [providerId], references: [id], onDelete: SetNull)
   providerId       Int?
   medication       String
   dosage           String
@@ -211,7 +211,7 @@ model Prescription {
 
 model HealthGoal {
   id           Int        @id @default(autoincrement())
-  patient      Patient    @relation(fields: [patientId], references: [id])
+  patient      Patient    @relation(fields: [patientId], references: [id], onDelete: Cascade)
   patientId    Int
   type         String // e.g., "Blood Pressure", "Weight", "Steps"
   targetValue  String
@@ -225,9 +225,9 @@ model HealthGoal {
 
 model SideEffect {
   id             Int           @id @default(autoincrement())
-  patient        Patient       @relation(fields: [patientId], references: [id])
+  patient        Patient       @relation(fields: [patientId], references: [id], onDelete: Cascade)
   patientId      Int
-  prescription   Prescription? @relation(fields: [prescriptionId], references: [id])
+  prescription   Prescription? @relation(fields: [prescriptionId], references: [id], onDelete: SetNull)
   prescriptionId Int?
   effect         String
   severity       Severity
@@ -240,9 +240,9 @@ model SideEffect {
 
 model Appointment {
   id         Int               @id @default(autoincrement())
-  patient    Patient           @relation(fields: [patientId], references: [id])
+  patient    Patient           @relation(fields: [patientId], references: [id], onDelete: Cascade)
   patientId  Int
-  hospital   Hospital          @relation(fields: [hospitalId], references: [id])
+  hospital   Hospital          @relation(fields: [hospitalId], references: [id], onDelete: Cascade)
   hospitalId Int
   dateTime   DateTime
   type       AppointmentType   @default(regular)
@@ -255,9 +255,9 @@ model Appointment {
 
 model FollowUp {
   id           Int      @id @default(autoincrement())
-  patient      Patient  @relation(fields: [patientId], references: [id])
+  patient      Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
   patientId    Int
-  provider     User     @relation("ProviderFollowUps", fields: [providerId], references: [id])
+  provider     User     @relation("ProviderFollowUps", fields: [providerId], references: [id], onDelete: Cascade)
   providerId   Int
   followUpDate DateTime
   notes        String?
@@ -268,9 +268,9 @@ model FollowUp {
 
 model Reminder {
   id             Int            @id @default(autoincrement())
-  patient        Patient        @relation(fields: [patientId], references: [id])
+  patient        Patient        @relation(fields: [patientId], references: [id], onDelete: Cascade)
   patientId      Int
-  prescription   Prescription?  @relation(fields: [prescriptionId], references: [id])
+  prescription   Prescription?  @relation(fields: [prescriptionId], references: [id], onDelete: SetNull)
   prescriptionId Int?
   medication     String
   dosage         String
@@ -283,9 +283,9 @@ model Reminder {
 
 model AdherenceRecord {
   id             Int             @id @default(autoincrement())
-  patient        Patient         @relation(fields: [patientId], references: [id])
+  patient        Patient         @relation(fields: [patientId], references: [id], onDelete: Cascade)
   patientId      Int
-  prescription   Prescription?   @relation(fields: [prescriptionId], references: [id])
+  prescription   Prescription?   @relation(fields: [prescriptionId], references: [id], onDelete: SetNull)
   prescriptionId Int?
   medication     String
   scheduledTime  DateTime
@@ -297,7 +297,7 @@ model AdherenceRecord {
 
 model SmsLog {
   id        Int       @id @default(autoincrement())
-  patient   Patient?  @relation(fields: [patientId], references: [id])
+  patient   Patient?  @relation(fields: [patientId], references: [id], onDelete: SetNull)
   patientId Int?
   phone     String
   message   String

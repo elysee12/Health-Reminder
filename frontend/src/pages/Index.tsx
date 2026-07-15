@@ -99,8 +99,8 @@ const Index = () => {
   const features = [
     { icon: Activity,      title: "Real-time BP Monitoring",    desc: "Track blood pressure readings instantly with live dashboards and trend analysis for every patient.",       color: "bg-gradient-to-br from-emerald-500 to-teal-600" },
     { icon: Bell,          title: "SMS Medication Reminders",   desc: "Automated, personalized SMS reminders ensure patients never miss a dose, even without internet access.",   color: "bg-gradient-to-br from-blue-500 to-cyan-600" },
-    { icon: BarChart3,     title: "Adherence Analytics",        desc: "Powerful charts and reports give providers deep insight into patient adherence patterns over time.",        color: "bg-gradient-to-br from-violet-500 to-purple-600" },
-    { icon: Users,         title: "Multi-role Access",          desc: "Tailored dashboards for patients, healthcare providers, and administrators — each with the right tools.",   color: "bg-gradient-to-br from-rose-500 to-pink-600" },
+    { icon: BarChart3,     title: "Adherence Analytics",        desc: "Powerful charts and reports give healthcare providers deep insight into patient adherence patterns over time.",        color: "bg-gradient-to-br from-violet-500 to-purple-600" },
+    { icon: Users,         title: "Multi-role Access",          desc: "Tailored dashboards for patients, healthcare providers, and system admins — each with the right tools.",   color: "bg-gradient-to-br from-rose-500 to-pink-600" },
     { icon: MessageSquare, title: "Follow-up Management",       desc: "Schedule and track follow-up appointments with automated reminders and outcome documentation.",            color: "bg-gradient-to-br from-amber-500 to-orange-600" },
     { icon: Shield,        title: "Secure & Compliant",         desc: "Enterprise-grade security with role-based access control, audit logs, and data privacy compliance.",       color: "bg-gradient-to-br from-slate-600 to-slate-800" },
   ];
@@ -260,9 +260,9 @@ const Index = () => {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
-              { step: '01', icon: Stethoscope, title: 'Provider Registers Patient', desc: 'Healthcare providers register patients, set up prescriptions, and configure personalized medication schedules.' },
+              { step: '01', icon: Stethoscope, title: 'Healthcare Provider Registers Patient', desc: 'Healthcare providers register patients, set up prescriptions, and configure personalized medication schedules.' },
               { step: '02', icon: Bell, title: 'Automated Reminders Sent', desc: 'The system sends timely SMS reminders to patients for each medication dose, even without internet access.' },
-              { step: '03', icon: TrendingUp, title: 'Track & Improve Adherence', desc: 'Providers monitor adherence in real-time, identify at-risk patients, and intervene before complications arise.' },
+              { step: '03', icon: TrendingUp, title: 'Track & Improve Adherence', desc: 'Healthcare providers monitor adherence in real-time, identify at-risk patients, and intervene before complications arise.' },
             ].map(({ step, icon: Icon, title, desc }, i) => (
               <div key={step} className="relative animate-slide-up" style={{ animationDelay: `${i * 120}ms` }}>
                 <div className="flex items-start gap-5">

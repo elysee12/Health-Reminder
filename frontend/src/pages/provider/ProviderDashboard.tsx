@@ -113,8 +113,8 @@ export default function ProviderDashboard() {
       <div className="space-y-6 animate-fade-in">
 
         {/* ── Page header ─────────────────────────────────────── */}
-        <div className="flex items-start justify-between">
-          <div>
+        <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-4">
+          <div className="flex-1">
             <p className="text-xs font-semibold text-emerald-600 uppercase tracking-widest mb-1">{greeting}</p>
             <h1 className="font-heading text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight">
               {t('welcome')}, {user?.name?.split(' ').pop()}
@@ -122,11 +122,33 @@ export default function ProviderDashboard() {
             </h1>
             <p className="text-slate-500 text-sm mt-1">{t('provider_dashboard_subtitle')}</p>
           </div>
-          <div className="hidden md:flex items-center gap-2 bg-white border border-slate-200 rounded-2xl px-4 py-2.5 shadow-sm">
-            <Activity className="h-4 w-4 text-emerald-500" />
-            <span className="text-xs font-semibold text-slate-600">
-              {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
-            </span>
+          
+          {/* Hospital Information Card */}
+          <div className="flex flex-col sm:flex-row gap-3">
+            {/* Date Card */}
+            <div className="hidden md:flex items-center gap-2 bg-white border border-slate-200 rounded-2xl px-4 py-2.5 shadow-sm">
+              <Activity className="h-4 w-4 text-emerald-500" />
+              <span className="text-xs font-semibold text-slate-600">
+                {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
+              </span>
+            </div>
+            
+            {/* Hospital Badge */}
+            {user?.hospital && (
+              <div className="flex items-center gap-3 bg-gradient-to-br from-emerald-50 to-teal-50 border-2 border-emerald-200 rounded-2xl px-4 py-2.5 shadow-sm hover:shadow-md transition-all duration-200">
+                <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 shadow-sm shrink-0">
+                  <Stethoscope className="h-5 w-5 text-white" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-emerald-600 leading-none">
+                    {language === 'en' ? 'Assigned Hospital' : 'Ibitaro Washinzwe'}
+                  </p>
+                  <p className="text-sm font-extrabold text-slate-900 mt-1 leading-tight truncate">
+                    {user.hospital.name}
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 

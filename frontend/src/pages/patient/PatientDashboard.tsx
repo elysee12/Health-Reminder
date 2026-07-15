@@ -50,11 +50,11 @@ export default function PatientDashboard() {
   const { user, t, language } = useAuth();
   const navigate = useNavigate();
 
-  const { data: allReminders = [],        isLoading: remL, refetch } = useReminders();
-  const { data: allPrescriptions = [],    isLoading: rxL  }          = usePrescriptions();
-  const { data: allAdherenceRecords = [], isLoading: adhL }          = useAdherenceRecords();
-  const { data: goals = [] }                                          = useHealthGoals(user?.id);
-  const { data: appointments = [] }                                   = useAppointments(user?.id);
+  const { data: allReminders = [],        isLoading: remL, isError: remE, error: remError, refetch } = useReminders();
+  const { data: allPrescriptions = [],    isLoading: rxL,  isError: rxE, error: rxError  }          = usePrescriptions();
+  const { data: allAdherenceRecords = [], isLoading: adhL, isError: adhE, error: adhError }          = useAdherenceRecords();
+  const { data: goals = [],               isError: goalsE, error: goalsError }                        = useHealthGoals(user?.id);
+  const { data: appointments = [],        isError: apptE, error: apptError }                          = useAppointments(user?.id);
 
   const [expandedRx, setExpandedRx] = useState<Record<number, boolean>>({});
 
@@ -115,6 +115,56 @@ export default function PatientDashboard() {
       </div>
     </DashboardLayout>
   );
+
+  // Handle critical errors that prevent dashboard from rendering
+  const hasError = remE || rxE || adhE;
+  if (hasError) {
+    const errorMessages = [
+      remE && remError ? `Reminders: ${remError.message}` : null,
+      rxE && rxError ? `Prescriptions: ${rxError.message}` : null,
+      adhE && adhError ? `Adherence: ${adhError.message}` : null,
+    ].filter(Boolean);
+
+    console.error('Dashboard loading errors:', { remE, rxE, adhE, errorMessages });
+
+    return (
+      <DashboardLayout>
+        <div className="flex flex-col items-center justify-center min-h-[60vh] gap-6 px-6">
+          <div className="w-16 h-16 rounded-2xl bg-red-50 flex items-center justify-center">
+            <AlertTriangle className="h-8 w-8 text-red-500" />
+          </div>
+          <div className="text-center max-w-md">
+            <h2 className="text-xl font-bold text-slate-800 mb-2">
+              {t('unable_to_load_dashboard') || 'Unable to Load Dashboard'}
+            </h2>
+            <p className="text-sm text-slate-500 mb-4">
+              {t('connection_issue_message') || 'There was a problem connecting to the server. Please check your internet connection and try again.'}
+            </p>
+            {errorMessages.length > 0 && (
+              <div className="text-xs text-left bg-slate-50 rounded-lg p-3 mb-4 space-y-1 max-w-sm mx-auto">
+                {errorMessages.map((msg, i) => (
+                  <p key={i} className="text-slate-600 font-mono truncate">{msg}</p>
+                ))}
+              </div>
+            )}
+          </div>
+          <button
+            onClick={() => window.location.reload()}
+            className="flex items-center gap-2 text-sm font-bold text-white bg-gradient-to-r from-emerald-500 to-teal-500 px-6 py-3 rounded-xl shadow-sm active:scale-95 transition-transform"
+          >
+            <Activity className="h-4 w-4" />
+            {t('retry') || 'Retry'}
+          </button>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  // Handle non-critical errors - log but continue with empty data
+  if (goalsE || apptE) {
+    console.warn('Non-critical dashboard data errors:', { goalsE, apptE });
+    // Continue to render with empty arrays (already set as defaults)
+  }
 
   const hour = new Date().getHours();
   const greeting = hour < 12 ? `🌅 ${t('good_morning')}` : hour < 17 ? `☀️ ${t('good_afternoon')}` : `🌙 ${t('good_evening')}`;

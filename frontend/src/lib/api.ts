@@ -1,27 +1,45 @@
 const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:3000') + '/api';
 
 export async function fetchFromApi(endpoint: string, options: RequestInit = {}) {
-  const response = await fetch(`${API_URL}${endpoint}`, {
-    ...options,
-    credentials: 'include',
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
-  });
+  // Add timeout to prevent requests from hanging indefinitely
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
 
-  if (!response.ok) {
-    let errorMessage = 'Something went wrong';
-    try {
-      const error = await response.json();
-      errorMessage = error.message || error.error || JSON.stringify(error);
-    } catch {
-      errorMessage = await response.text() || errorMessage;
+  try {
+    const response = await fetch(`${API_URL}${endpoint}`, {
+      ...options,
+      credentials: 'include',
+      signal: controller.signal,
+      headers: {
+        'Content-Type': 'application/json',
+        ...options.headers,
+      },
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      let errorMessage = 'Something went wrong';
+      try {
+        const error = await response.json();
+        errorMessage = error.message || error.error || JSON.stringify(error);
+      } catch {
+        errorMessage = await response.text() || errorMessage;
+      }
+      throw new Error(errorMessage);
     }
-    throw new Error(errorMessage);
-  }
 
-  return response.json();
+    return response.json();
+  } catch (error: any) {
+    clearTimeout(timeoutId);
+    
+    // Handle timeout errors more gracefully
+    if (error.name === 'AbortError') {
+      throw new Error('Request timeout - please check your connection and try again');
+    }
+    
+    throw error;
+  }
 }
 
 export const api = {

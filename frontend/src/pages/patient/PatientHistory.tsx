@@ -3,7 +3,7 @@ import { useAuth } from '@/lib/auth-context';
 import { useAdherenceRecords, usePatients } from '@/hooks/use-api';
 import DashboardLayout from '@/components/DashboardLayout';
 import { Card, CardContent } from '@/components/ui/card';
-import { LayoutDashboard, Pill, Bell, History, Target, MessageSquare, Calendar } from 'lucide-react';
+import { CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 
 export default function PatientHistory() {
   const { user, t } = useAuth();

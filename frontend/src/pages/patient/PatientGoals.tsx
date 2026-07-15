@@ -154,7 +154,7 @@ export default function PatientGoals() {
               <div className="p-12 text-center border-2 border-dashed rounded-xl">
                 <Target className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-20" />
                 <h3 className="text-lg font-medium">{language === 'en' ? 'No goals set yet' : 'Nta ntego zashyizweho'}</h3>
-                <p className="text-muted-foreground mb-6">{language === 'en' ? 'Work with your provider to set health targets.' : 'Fatanya n\'umuganga wawe gushyiraho intego z\'ubuzima.'}</p>
+                <p className="text-muted-foreground mb-6">{language === 'en' ? 'Work with your healthcare provider to set health targets.' : 'Fatanya n\'umuganga w\'ubuzima rusange wawe gushyiraho intego z\'ubuzima.'}</p>
                 <Button variant="outline">{language === 'en' ? 'Learn More' : 'Menya byinshi'}</Button>
               </div>
             )}

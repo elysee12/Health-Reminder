@@ -145,7 +145,7 @@ export default function AdminHospitals() {
                         <div className="font-bold text-lg">{h._count?.patients || 0}</div>
                       </div>
                       <div>
-                        <div className="text-xs text-muted-foreground uppercase tracking-wider">{language === 'en' ? 'Providers' : 'Abaganga'}</div>
+                        <div className="text-xs text-muted-foreground uppercase tracking-wider">{language === 'en' ? 'Healthcare Providers' : 'Abaganga b\'Ubuzima Rusange'}</div>
                         <div className="font-bold text-lg">{h._count?.providers || 0}</div>
                       </div>
                     </div>

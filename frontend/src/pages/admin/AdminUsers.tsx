@@ -115,7 +115,7 @@ export default function AdminUsers() {
     }
 
     if (formRole === 'provider' && !formHospitalId) {
-      toast.error(language === 'en' ? 'Please select a hospital for provider' : 'Hitamo ibitaro kuri provider');
+      toast.error(language === 'en' ? 'Please select a hospital for healthcare provider' : 'Hitamo ibitaro kuri umuganga w\'ubuzima rusange');
       return;
     }
 
@@ -166,7 +166,7 @@ export default function AdminUsers() {
     }
 
     if (formRole === 'provider' && !formHospitalId) {
-      toast.error(language === 'en' ? 'Please select a hospital for provider' : 'Hitamo ibitaro kuri provider');
+      toast.error(language === 'en' ? 'Please select a hospital for healthcare provider' : 'Hitamo ibitaro kuri umuganga w\'ubuzima rusange');
       return;
     }
 
@@ -232,8 +232,8 @@ export default function AdminUsers() {
                     <Select value={formRole} onValueChange={(v: any) => { setFormRole(v); if (v !== 'provider') setFormHospitalId(undefined); }}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="admin">Admin</SelectItem>
-                        <SelectItem value="provider">Provider</SelectItem>
+                        <SelectItem value="admin">System Admin</SelectItem>
+                        <SelectItem value="provider">Healthcare Provider</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -307,6 +307,12 @@ export default function AdminUsers() {
                   <tbody>
                     {filtered.map((u: any) => {
                       const Icon = roleIcon[u.role as keyof typeof roleIcon] || User;
+                      const roleLabels: Record<string, string> = {
+                        admin: 'System Admin',
+                        provider: 'Healthcare Provider',
+                        patient: 'Patient'
+                      };
+                      const roleLabel = roleLabels[u.role] || u.role;
                       return (
                         <tr key={u.id} className="border-b hover:bg-muted/50 transition-colors">
                           <td className="p-3">
@@ -320,7 +326,7 @@ export default function AdminUsers() {
                               </div>
                             </div>
                           </td>
-                          <td className="p-3 capitalize">{u.role}</td>
+                          <td className="p-3">{roleLabel}</td>
                           <td className="p-3">
                             <Badge 
                               variant={u.status === 'active' ? 'success' : u.status === 'pending' ? 'warning' : 'secondary'} 
@@ -375,8 +381,8 @@ export default function AdminUsers() {
                 <Select value={formRole} onValueChange={(v: any) => { setFormRole(v); if (v !== 'provider') setFormHospitalId(undefined); }}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="admin">Admin</SelectItem>
-                    <SelectItem value="provider">Provider</SelectItem>
+                    <SelectItem value="admin">System Admin</SelectItem>
+                    <SelectItem value="provider">Healthcare Provider</SelectItem>
                     <SelectItem value="patient">Patient</SelectItem>
                   </SelectContent>
                 </Select>

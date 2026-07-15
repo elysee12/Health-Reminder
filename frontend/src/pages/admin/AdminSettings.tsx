@@ -51,7 +51,7 @@ export default function AdminSettings() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div><Label>{language === 'en' ? 'System Name' : "Izina ry'Sisitemu"}</Label><Input value={systemName} onChange={(e) => setSystemName(e.target.value)} className="mt-1.5 max-w-md" /></div>
-            <div><Label>{language === 'en' ? 'Admin Email' : "Imeyili y'Umuyobozi"}</Label><Input type="email" value={adminEmail} onChange={(e) => setAdminEmail(e.target.value)} className="mt-1.5 max-w-md" /></div>
+            <div><Label>{language === 'en' ? 'System Admin Email' : "Imeyili y'Umuyobozi wa Sisitemu"}</Label><Input type="email" value={adminEmail} onChange={(e) => setAdminEmail(e.target.value)} className="mt-1.5 max-w-md" /></div>
             <div>
               <Label>{language === 'en' ? 'Default Language' : 'Ururimi Mbonezamubano'}</Label>
               <Select value={defaultLang} onValueChange={setDefaultLang}>
@@ -155,7 +155,7 @@ export default function AdminSettings() {
               <Switch checked={twoFactor} onCheckedChange={setTwoFactor} />
             </div>
             <div className="flex items-center justify-between max-w-md">
-              <Label>{language === 'en' ? 'Require Admin Approval for New Users' : 'Gusaba Kwemezwa n\'Umuyobozi ku Bakoresha Bashya'}</Label>
+              <Label>{language === 'en' ? 'Require System Admin Approval for New Users' : 'Gusaba Kwemezwa n\'Umuyobozi wa Sisitemu ku Bakoresha Bashya'}</Label>
               <Switch checked={requireApproval} onCheckedChange={setRequireApproval} />
             </div>
             <div>

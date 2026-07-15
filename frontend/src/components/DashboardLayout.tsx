@@ -54,7 +54,6 @@ export default function DashboardLayout({ children, sidebarItems: initialSidebar
       { label: t('target_goals'),  icon: <Target className="h-4 w-4" />,          path: '/patient/goals' },
       { label: t('side_effects'),  icon: <MessageSquare className="h-4 w-4" />,   path: '/patient/side-effects' },
       { label: t('appointments'),  icon: <Calendar className="h-4 w-4" />,        path: '/patient/appointments' },
-      { label: t('history'),       icon: <History className="h-4 w-4" />,         path: '/patient/history' },
     ];
   }, [user?.role, t, initialSidebarItems]);
 

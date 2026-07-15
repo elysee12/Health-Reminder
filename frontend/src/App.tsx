@@ -37,7 +37,19 @@ import ProfileUpdate from "./components/ProfileUpdate";
 import NotFound from "./pages/NotFound";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1, // Only retry once instead of 3 times
+      retryDelay: 1000, // 1 second delay between retries
+      staleTime: 30_000, // Consider data fresh for 30 seconds
+      gcTime: 5 * 60 * 1000, // Keep unused data in cache for 5 minutes
+      refetchOnWindowFocus: false, // Don't refetch when window regains focus
+      refetchOnReconnect: true, // Refetch when network reconnects
+      networkMode: 'online', // Only run queries when online
+    },
+  },
+});
 
 function AppRoutes() {
   const { user, isCheckingAuth } = useAuth();

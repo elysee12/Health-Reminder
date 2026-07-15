@@ -37,16 +37,16 @@ function StatCard({
 
 /* ── Role badge ─────────────────────────────────────────────────── */
 function RoleBadge({ role }: { role: string }) {
-  const map: Record<string, { cls: string; Icon: React.ElementType }> = {
-    admin:    { cls: 'badge-info',    Icon: ShieldCheck  },
-    provider: { cls: 'badge-success', Icon: Stethoscope  },
-    patient:  { cls: 'badge-neutral', Icon: User         },
+  const map: Record<string, { cls: string; Icon: React.ElementType; label: string }> = {
+    admin:    { cls: 'badge-info',    Icon: ShieldCheck,  label: 'System Admin' },
+    provider: { cls: 'badge-success', Icon: Stethoscope,  label: 'Healthcare Provider' },
+    patient:  { cls: 'badge-neutral', Icon: User,         label: 'Patient' },
   };
-  const { cls, Icon } = map[role] || map.patient;
+  const { cls, Icon, label } = map[role] || { ...map.patient, label: role.charAt(0).toUpperCase() + role.slice(1) };
   return (
     <span className={cls}>
       <Icon className="h-3 w-3" />
-      {role.charAt(0).toUpperCase() + role.slice(1)}
+      {label}
     </span>
   );
 }
@@ -71,9 +71,9 @@ export default function AdminDashboard() {
   const highRisk      = patients.filter((p: any) => p.riskLevel === 'high').length;
 
   const roleData = [
-    { name: 'Providers', value: users.filter((u: any) => u.role === 'provider').length, color: '#10b981' },
+    { name: 'Healthcare Providers', value: users.filter((u: any) => u.role === 'provider').length, color: '#10b981' },
     { name: 'Patients',  value: users.filter((u: any) => u.role === 'patient').length,  color: '#3b82f6' },
-    { name: 'Admins',    value: users.filter((u: any) => u.role === 'admin').length,    color: '#8b5cf6' },
+    { name: 'System Admins',    value: users.filter((u: any) => u.role === 'admin').length,    color: '#8b5cf6' },
   ];
 
   if (uL || hL || pL) return (

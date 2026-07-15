@@ -21,8 +21,16 @@ export class AdherenceRecordService {
   }
 
   async findAll(providerId?: number) {
+    // First get all valid patient IDs
+    const validPatientIds = (await this.prisma.patient.findMany({
+      select: { id: true },
+    })).map(p => p.id);
+
     return this.prisma.adherenceRecord.findMany({
-      where: providerId ? { patient: { registeredByUserId: providerId } } : undefined,
+      where: {
+        patientId: { in: validPatientIds },
+        ...(providerId ? { patient: { registeredByUserId: providerId } } : {}),
+      },
       include: {
         patient: true,
         prescription: true,
@@ -31,13 +39,17 @@ export class AdherenceRecordService {
   }
 
   async findOne(id: number) {
-    return this.prisma.adherenceRecord.findUnique({
+    // First check if the adherence record's patient exists
+    const record = await this.prisma.adherenceRecord.findUnique({
       where: { id },
       include: {
         patient: true,
         prescription: true,
       },
     });
+
+    // Only return if patient exists
+    return record?.patient ? record : null;
   }
 
   async update(id: number, updateAdherenceRecordDto: UpdateAdherenceRecordDto) {
